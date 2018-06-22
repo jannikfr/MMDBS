@@ -4,7 +4,6 @@ import os
 import cv2
 from flask import Flask, render_template, request
 import db_connection
-import feature_extractor
 from mmdbs_image import MMDBSImage
 
 app = Flask(__name__)
