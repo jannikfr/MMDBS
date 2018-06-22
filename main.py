@@ -36,16 +36,13 @@ if refresh_db:
         # Ignore files for the MacOS file system
         if subdirectory != ".DS_Store":
             for image in os.listdir(subdirectory_path):
-                # Create Image object
-                temp_image = Image()
 
-                # Compute features and assign the to the object's attribute
                 image_path = subdirectory_path + "/" + image
-                temp_image.classification = subdirectory
-                temp_image.path = image_path
 
-                # Convert to HSV color space
-                temp_image.image = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2HSV)
+                # build image object
+                temp_image = Image()
+                temp_image.buildAttributes(image_path, '')
+
                 # temp_image.image = cv2.normalize(temp_image.image, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX)
 
                 temp_image.local_histogram = feature_extractor.extract_histograms(temp_image.image, 1, 2, [8, 2, 4],
@@ -67,3 +64,5 @@ if refresh_db:
 
 # Close database connection
 db_connection.close_connection(conn)
+
+

@@ -11,3 +11,11 @@ class Image:
         self.global_edge_histogram = {}
         self.local_histogram = {}
         self.global_histogram = {}
+
+    def buildAttributes(self, path, classification):
+            self.path = path
+            self.classification = classification
+            # Convert to HSV color space
+            self.image = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2HSV)
+
+            return self
