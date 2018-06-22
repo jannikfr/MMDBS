@@ -44,19 +44,7 @@ def do_db_search():
         temp_image = Image()
         temp_image.buildAttributes(thePath, '')
 
-        # extract local histogram
-        temp_image.local_histogram = feature_extractor.extract_histograms(temp_image.image, 1, 2, [8, 2, 4],
-                                                                          False)
-        # extract global histogram
-        temp_image.global_histogram = feature_extractor.extract_histograms(temp_image.image, 1, 1, [8, 2, 4],
-                                                                           False)
-        # extract sobel edge
-        temp_image.sobel_edge_detection = feature_extractor.sobel_edge_detection(temp_image.image)
 
-        # extract global edge histogram
-        temp_image.global_edge_histogram = feature_extractor.extract_histograms_greyscale(
-            temp_image.sobel_edge_detection, 1, 1, 64, False, np.min(temp_image.sobel_edge_detection),
-            np.max(temp_image.sobel_edge_detection))
 
         return callHtmlPage(feat, sim, seg, eigenval, picanz, queryobject)
 

@@ -4,6 +4,22 @@ import numpy as np
 import collections
 import cv2
 
+def extract_features(feature, image):
+    if feature  =='all':
+        extractAllFeatures(image)
+        return image
+
+    elif feature == 'local':
+        extractLocalFeature(image)
+        return image
+
+    elif feature == 'global':
+        extractGlobalFeature(image)
+        return image
+
+    elif feature == 'edge':
+        extractEdgeFeature(image)
+        return image
 
 def extract_histograms(image_param, h_splits, v_splits, number_of_bins, show_cells):
     """
@@ -181,3 +197,44 @@ def extract_histograms_greyscale(image_param, h_splits, v_splits, number_of_bins
             histogram['cell_histograms'].append(cell_histogram)
 
     return histogram
+
+
+def extractAllFeatures(image):
+        # extract local histogram
+        extractLocalFeature(image)
+        # extract global histogram
+        image.global_histogram = extract_histograms(image.image, 1, 1, [8, 2, 4],
+                                                                           False)
+        extractEdgeFeature(image)
+        return image
+
+
+def extractLocalFeature(image):
+
+        # extract local histogram2x2
+        image.local_histogram = extract_histograms(image.image, 1, 2, [8, 2, 4],
+                                                   False)
+        # extract local histogram3x3
+        image.local_histogram = extract_histograms(image.image, 1, 2, [8, 2, 4],
+                                                   False)
+        # extract local histogram4x4
+        image.local_histogram = extract_histograms(image.image, 1, 2, [8, 2, 4],
+                                                   False)
+        return image
+
+
+def extractEdgeFeature(image):
+    # extract sobel edge
+    image.sobel_edge_detection = sobel_edge_detection(image.image)
+
+    # extract global edge histogram
+    image.global_edge_histogram = extract_histograms_greyscale(
+        image.sobel_edge_detection, 1, 1, 64, False, np.min(image.sobel_edge_detection),
+        np.max(image.sobel_edge_detection))
+    return image
+
+
+def extractGlobalFeature(image):
+    image.global_histogram = extract_histograms(image.image, 1, 1, [8, 2, 4],
+                                                False)
+    return image
