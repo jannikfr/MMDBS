@@ -63,16 +63,29 @@ def write_image_to_database(conn, image):
     :param image: image object, whose features need to be stored in the database
     """
 
-    sql = "INSERT INTO mmdbs_image(path, classification, local_histogram, global_histogram, global_edge_histogram) " \
-          "VALUES(%s, %s, %s, %s, %s) "
+    sql = "INSERT INTO mmdbs_image(" \
+          "path, " \
+          "classification, " \
+          "local_histogram1, " \
+          "local_histogram2, " \
+          "local_histogram3, " \
+          "global_histogram, " \
+          "global_edge_histogram) " \
+          "VALUES(%s, %s, %s, %s, %s, %s, %s) "
 
     try:
         # Create a new cursor
         cur = conn.cursor()
         # Execute the INSERT statement
-        cur.execute(sql, (
-            image.path, image.classification, json.dumps(image.local_histogram), json.dumps(image.global_histogram),
-            json.dumps(image.global_edge_histogram),))
+        cur.execute(sql,
+                    (image.path,
+                     image.classification,
+                     json.dumps(image.local_histogram_2_2),
+                     json.dumps(image.local_histogram_3_3),
+                     json.dumps(image.local_histogram_4_4),
+                     json.dumps(image.global_histogram),
+                     json.dumps(image.global_edge_histogram),)
+                    )
         # Commit the changes to the database
         conn.commit()
 

@@ -9,7 +9,9 @@ class MMDBSImage:
         self.path = ""
         self.image = np.empty
 
-        self.local_histogram = {}
+        self.local_histogram_2_2 = {}
+        self.local_histogram_3_3 = {}
+        self.local_histogram_4_4 = {}
         self.global_histogram = {}
         self.sobel_edges = np.empty
         self.global_edge_histogram = {}
@@ -34,7 +36,9 @@ class MMDBSImage:
 
         if feature == 'all':
             self.global_histogram = self.extract_histograms(self.image, 1, 1, [8, 2, 4], False)
-            self.local_histogram = self.extract_histograms(self.image, 2, 2, [8, 2, 4], False)
+            self.local_histogram_2_2 = self.extract_histograms(self.image, 2, 2, [8, 2, 4], False)
+            self.local_histogram_3_3 = self.extract_histograms(self.image, 3, 3, [8, 2, 4], False)
+            self.local_histogram_4_4 = self.extract_histograms(self.image, 4, 4, [8, 2, 4], False)
             self.sobel_edges = self.extract_sobel_edges(self.image)
             min_edge_value = np.min(self.sobel_edges)
             max_edge_value = np.max(self.sobel_edges)
@@ -42,7 +46,9 @@ class MMDBSImage:
                                                                            min_edge_value, max_edge_value)
 
         elif feature == 'local_histogram':
-            self.local_histogram = self.extract_histograms(self.image, 2, 2, [8, 2, 4], False)
+            self.local_histogram_2_2 = self.extract_histograms(self.image, 2, 2, [8, 2, 4], False)
+            self.local_histogram_3_3 = self.extract_histograms(self.image, 3, 3, [8, 2, 4], False)
+            self.local_histogram_4_4 = self.extract_histograms(self.image, 4, 4, [8, 2, 4], False)
 
         elif feature == 'global_histogram':
             self.global_histogram = self.extract_histograms(self.image, 1, 1, [8, 2, 4], False)
