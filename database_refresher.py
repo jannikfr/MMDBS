@@ -15,7 +15,6 @@ print("The images are stored in ", path, ".")
 
 # Establish DB connection
 conn = db_connection.connect()
-
 MMDBSImages = db_connection.get_all_images(conn)
 
 # Loop trough all subdirectories of the given path if refresh = TRUE
@@ -44,7 +43,7 @@ for subdirectory in os.listdir(path):
                 # Build image object
                 temp_image = MMDBSImage()
                 temp_image.set_image(image_path, subdirectory)
-                temp_image = controller.extract_all_features(temp_image)
+                temp_image = Controller.extract_all_features(temp_image)
 
                 # See outputs
                 # cv2.imwrite(image, temp_image.sobel_edge_detection)

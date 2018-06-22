@@ -1,14 +1,14 @@
 import os
 import re
-
 from flask import Flask, render_template, request
-
-import controller
+from controller import Controller
 import db_connection
 from mmdbs_image import MMDBSImage
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = '/'
+
+controller = Controller()
 
 
 @app.route('/', methods=['POST', 'GET'])
