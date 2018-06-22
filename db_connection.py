@@ -19,6 +19,7 @@ def connect():
         return conn
 
     except (Exception, psycopg2.DatabaseError) as error:
+        print("An error occurred in connect().")
         print(error)
 
 
@@ -62,7 +63,7 @@ def write_image_to_database(conn, image):
     :param image: image object, whose features need to be stored in the database
     """
 
-    sql = """INSERT INTO mmdbs_image(path, classification, local_histogram, global_histogram) VALUES(%s, %s) """
+    sql = """INSERT INTO mmdbs_image(path, classification, local_histogram, global_histogram) VALUES(%s, %s, %s, %s) """
 
     try:
         # Create a new cursor
@@ -78,6 +79,7 @@ def write_image_to_database(conn, image):
         # Close communication with the database
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
+        print("An error occurred in write_image_to_database().")
         print(error)
 
 
@@ -93,13 +95,14 @@ def get_image(conn):
         cur.close()
         return cur.fetchall()
     except (Exception, psycopg2.DatabaseError) as error:
+        print("An error occurred in get_image().")
         print(error)
+
 
 def get_count_images():
     sql = """SELECT count(id) FROM mmdbs_image"""
 
     try:
-
         conn = connect()
 
         # Create a new cursor
@@ -112,4 +115,30 @@ def get_count_images():
         print(theResult)
         return theResult
     except (Exception, psycopg2.DatabaseError) as error:
+        print("An error occurred in get_count_images().")
         print(error)
+
+
+def delete_all_images(conn):
+    """
+    Clear the table mmdbs_image in the database".
+    :param conn: Connection object to access the database.
+    :return: The numbe of deleted images.
+    """
+    rows_deleted = 0
+    try:
+        # create a new cursor
+        cur = conn.cursor()
+        # execute the UPDATE  statement
+        cur.execute("DELETE FROM mmdbs_image")
+        # get the number of updated rows
+        rows_deleted = cur.rowcount
+        # Commit the changes to the database
+        conn.commit()
+        # Close communication with the PostgreSQL database
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print("An error occurred in delete_all_images().")
+        print(error)
+
+    return rows_deleted
