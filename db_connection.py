@@ -154,21 +154,15 @@ def get_image(conn):
         print(error)
 
 
-def get_count_images():
+def get_count_images(conn):
     sql = """SELECT count(id) FROM mmdbs_image"""
 
     try:
-        conn = connect()
-
         # Create a new cursor
         cur = conn.cursor()
-
         # Execute the SELECT statement
         cur.execute(sql)
-
-        theResult = cur.fetchone()
-        print(theResult)
-        return theResult
+        return cur.fetchone()
     except (Exception, psycopg2.DatabaseError) as error:
         print("An error occurred in get_count_images().")
         print(error)
