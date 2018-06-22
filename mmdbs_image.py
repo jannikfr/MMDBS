@@ -1,54 +1,66 @@
-import numpy
 import cv2
 import math
-
 import numpy as np
-import collections
 
 
-class Image:
+class MMDBSImage:
     def __init__(self):
         self.classification = ""
-        self.image = numpy.empty
-        self.sobel_edge_detection = numpy.empty
         self.path = ""
-        self.global_edge_histogram = {}
+        self.image = np.empty
+
         self.local_histogram = {}
         self.global_histogram = {}
+        self.sobel_edges = np.empty
+        self.global_edge_histogram = {}
 
-    def buildAttributes(self, path, classification):
-            self.path = path
-            self.classification = classification
-            # Convert to HSV color space
-            self.image = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2HSV)
+    def set_image(self, path, classification):
+        """
+        Load image from the given path and sets it with the path and classification as attribute of the object.
+        :param path: Path to the image file.
+        :param classification: Classification of the image.
+        """
+        self.path = path
+        self.classification = classification
 
-            return self
-
-
+        # Read image from file and convert to HSV color space
+        self.image = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2HSV)
 
     def extract_features(self, feature):
+        """
+        Extracts and sets the feature as attributes of the MMDBSImage object.
+        :param feature: String identifier of the feature.
+        """
+
         if feature == 'all':
-            self.extractAllFeatures()
-            return self
+            self.global_histogram = self.extract_histograms(self.image, 1, 1, [8, 2, 4], False)
+            self.local_histogram = self.extract_histograms(self.image, 2, 2, [8, 2, 4], False)
+            self.sobel_edges = self.extract_sobel_edges(self.image)
+            min_edge_value = np.min(self.sobel_edges)
+            max_edge_value = np.max(self.sobel_edges)
+            self.global_edge_histogram = self.extract_histograms_greyscale(self.sobel_edges, 1, 1, 64, False,
+                                                                           min_edge_value, max_edge_value)
 
-        elif feature == 'local':
-            self.extractLocalFeature()
-            return self
+        elif feature == 'local_histogram':
+            self.local_histogram = self.extract_histograms(self.image, 2, 2, [8, 2, 4], False)
 
-        elif feature == 'global':
-            self.extractGlobalFeature()
-            return self
+        elif feature == 'global_histogram':
+            self.global_histogram = self.extract_histograms(self.image, 1, 1, [8, 2, 4], False)
 
-        elif feature == 'edge':
-            self.extractEdgeFeature()
-            return self
+        elif feature == 'global_edge_histogram':
+            self.sobel_edges = self.extract_sobel_edges(self.image)
+            min_edge_value = np.min(self.sobel_edges)
+            max_edge_value = np.max(self.sobel_edges)
+            self.global_edge_histogram = self.extract_histograms_greyscale(self.sobel_edges, 1, 1, 64, False,
+                                                                           min_edge_value, max_edge_value)
 
-    def extract_histograms(self, h_splits, v_splits, number_of_bins, show_cells):
+    @staticmethod
+    def extract_histograms(image, h_splits, v_splits, number_of_bins, show_cells):
         """
         Split a given image in equal sized cells corresponding to the given number of vertical and horizontal splits,
         e.g. v_splits = 2 and h_splits=3 results in 6 cells. For each cell a histogram is computed whereby the colors are
         binned corresponding to the parameter number_of_bins.
-        :param image_param: Image whose histograms need to be computed. Assumes normal cv2 color ranges.
+        :param image: Image whose histograms need to be computed. Assumes normal cv2 color ranges.
         :param h_splits: The number of horizontal splits.
         :param v_splits: The number of vertical splits.
         :param number_of_bins: The number of bins for grouping the subcolor spaced h, s, v
@@ -64,7 +76,7 @@ class Image:
         histogram['cell_histograms'] = []
 
         # Split along horizontal axis
-        horizontal_split_images = np.array_split(self, h_splits, axis=0)
+        horizontal_split_images = np.array_split(image, h_splits, axis=0)
         for hor_index, horizontal_split_image in enumerate(horizontal_split_images):
 
             # Loop over split sub images and split each along vertical axis
@@ -73,7 +85,7 @@ class Image:
 
                 # Display the cells if desired in parameter
                 if show_cells:
-                    cv2.imshow("Current cell: hor:" + hor_index + "/ver: " + ver_index,
+                    cv2.imshow("Current cell: hor:" + str(hor_index) + "/ver: " + str(ver_index),
                                cv2.cvtColor(horizontal_vertical_split_image, cv2.COLOR_HSV2BGR))
                     cv2.waitKey(5000)
 
@@ -111,20 +123,21 @@ class Image:
                         s = 0
                         v = 0
 
-                # Order dictonary and append it to the overall dictionary
+                # Order dictionary and append it to the overall dictionary
                 # cell_histogram = collections.OrderedDict(sorted(cell_histogram.items()))
                 histogram['cell_histograms'].append(cell_histogram)
 
         return histogram
 
-    def sobel_edge_detection(self):
+    @staticmethod
+    def extract_sobel_edges(image):
         """
         Converts an image to greyscale and detects edges with Sobel filters.
-        :param image_param: Image whose edges needs to be detected.
-        :return: Numpy array containing the calculated edges. Array does not have a fixed value range.
+        :param image: Image whose edges needs to be detected.
+        :return: np array containing the calculated edges. Array does not have a fixed value range.
         """
         # Convert image to greyscale
-        input_image = cv2.cvtColor(self, cv2.COLOR_BGR2GRAY)
+        greyscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         # Define the basic kernel
         kernel = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, - 1]], dtype=np.float)
@@ -135,22 +148,22 @@ class Image:
         h_kernel = np.transpose(kernel)
 
         # Retrieve the image's dimensions
-        N = input_image.shape[0]
-        M = input_image.shape[1]
+        N = greyscale_image.shape[0]
+        M = greyscale_image.shape[1]
 
-        # Create an empty numpy array as the output
+        # Create an empty np array as the output
         output = np.zeros((N, M))
 
-        # Create a additional border of zeros around the input_image
+        # Create a additional border of zeros around the greyscale_image
         # Needed for the convolution algorithm
-        input_image = np.pad(input_image, pad_width=1, mode='constant', constant_values=0)
+        greyscale_image = np.pad(greyscale_image, pad_width=1, mode='constant', constant_values=0)
 
         # Loop over rows
         for i in range(1, N - 1):
             # Loop over columns
             for j in range(1, M - 1):
                 # Get a 3 to 3 image of the input for the convolution
-                sub_input = input_image[(i - 1):(i + 2), (j - 1):(j + 2)]
+                sub_input = greyscale_image[(i - 1):(i + 2), (j - 1):(j + 2)]
 
                 # Calcuate the horizontal and the vertical gradient corresponding to the convolution algorithm
                 h_gradient = np.sum(np.multiply(sub_input, h_kernel))
@@ -161,12 +174,14 @@ class Image:
 
         return output
 
-    def extract_histograms_greyscale(self, h_splits, v_splits, number_of_bins, show_cells, min_value, max_value):
+    @staticmethod
+    def extract_histograms_greyscale(greyscale_image, h_splits, v_splits, number_of_bins, show_cells, min_value,
+                                     max_value):
         """
         Split a given greyscale image in equal sized cells corresponding to the given number of vertical and horizontal splits,
         e.g. v_splits = 2 and h_splits=3 results in 6 cells. For each cell a histogram is computed whereby the colors are
         binned corresponding to the parameter number_of_bins.
-        :param image_param: Greyscale image whose histograms need to be computed
+        :param greyscale_image: Greyscale image whose histograms need to be computed
         :param h_splits: The number of horizontal splits.
         :param v_splits: The number of vertical splits.
         :param number_of_bins: The number of bins for grouping the greyscale range
@@ -184,7 +199,7 @@ class Image:
         histogram['cell_histograms'] = []
 
         # Split along horizontal axis
-        horizontal_split_images = np.split(self, h_splits, axis=0)
+        horizontal_split_images = np.split(greyscale_image, h_splits, axis=0)
         for hor_index, horizontal_split_image in enumerate(horizontal_split_images):
 
             # Loop over split sub images and split each along vertical axis
@@ -193,10 +208,11 @@ class Image:
 
                 # Display the cells if desired in parameter
                 if show_cells:
-                    cv2.imshow("Current cell: hor:" + hor_index + "/ver: " + ver_index, horizontal_vertical_split_image)
+                    cv2.imshow("Current cell: hor:" + str(hor_index) + "/ver: " + str(ver_index),
+                               horizontal_vertical_split_image)
                     cv2.waitKey(5000)
 
-                # Create empty dictonary and add information about histogram of this cell
+                # Create empty dictionary and add information about histogram of this cell
                 cell_histogram = {'horizontal_index': hor_index, 'vertical_index': ver_index}
 
                 # Loop over each value in pixel and assign bin to the h, s and v values
@@ -212,47 +228,8 @@ class Image:
                     else:
                         cell_histogram[bin] = 1
 
-                # Order dictonary and append it to the overall dictionary
+                # Order dictionary and append it to the overall dictionary
                 # cell_histogram = collections.OrderedDict(sorted(cell_histogram.items()))
                 histogram['cell_histograms'].append(cell_histogram)
 
             return histogram
-
-    def extractAllFeatures(self):
-        # extract local histogram
-        self.extractLocalFeature()
-        # extract global histogram
-        self.global_histogram = self.extract_histograms(self.image, 1, 1, [8, 2, 4],
-                                                    False)
-        self.extractEdgeFeature()
-
-
-    def extractLocalFeature(self):
-
-        # extract local histogram2x2
-        self.local_histogram = self.extract_histograms(self.image, 1, 2, [8, 2, 4],
-                                                   False)
-        # extract local histogram3x3
-        self.local_histogram = self.extract_histograms(self.image, 1, 2, [8, 2, 4],
-                                                   False)
-        # extract local histogram4x4
-        self.local_histogram = self.extract_histograms(self.image, 1, 2, [8, 2, 4],
-                                                   False)
-        return self
-
-    def extractEdgeFeature(self):
-        # extract sobel edge
-        self.sobel_edge_detection = self.sobel_edge_detection(self.image)
-
-        # extract global edge histogram
-        self.global_edge_histogram = self.extract_histograms_greyscale(
-            self.sobel_edge_detection, 1, 1, 64, False, np.min(self.sobel_edge_detection),
-            np.max(self.sobel_edge_detection))
-        return self
-
-    def extractGlobalFeature(self):
-        self.global_histogram = self.extract_histograms(self.image, 1, 1, [8, 2, 4],
-                                                    False)
-        return self
-
-
