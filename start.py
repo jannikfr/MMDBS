@@ -43,8 +43,6 @@ def do_db_search():
         temp_image.set_image(thePath, '')
         similiar_objects = controller.get_similar_objects(temp_image, feature, seg)
 
-
-
         return callHtmlPage(feature, sim, seg, eigenval, picanz, queryobject)
 
 
