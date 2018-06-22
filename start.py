@@ -1,7 +1,4 @@
-import numpy as np
 import os
-
-import cv2
 from flask import Flask, render_template, request
 import db_connection
 from mmdbs_image import MMDBSImage
@@ -42,7 +39,7 @@ def do_db_search():
         # build image object
         temp_image = MMDBSImage()
         temp_image.set_image(thePath, '')
-
+        temp_image.extract_features('global_edge_histogram')
 
 
         return callHtmlPage(feat, sim, seg, eigenval, picanz, queryobject)
