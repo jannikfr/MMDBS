@@ -96,8 +96,7 @@ class MMDBSImage:
                     cv2.waitKey(5000)
 
                 # Create empty dictonary and add information about histogram of this cell
-                cell_histogram = {'horizontal_index': hor_index, 'vertical_index': ver_index}
-
+                cell_histogram = {'horizontal_index': hor_index, 'vertical_index': ver_index, 'values': {}}
                 h = 0
                 s = 0
                 v = 0
@@ -118,11 +117,11 @@ class MMDBSImage:
                         # All values for this pixel are processed
                         # Build key to compute new binned HSV value
                         # Increase the counter for this HSV value if exists
-                        if key in cell_histogram:
-                            cell_histogram[key] = cell_histogram[key] + 1
+                        if key in cell_histogram['values']:
+                            cell_histogram['values'][key] = cell_histogram['values'][key] + 1
                         # HSV value does not exist yet => create it and set counter to 1
                         else:
-                            cell_histogram[key] = 1
+                            cell_histogram['values'][key] = 1
 
                         # Reset variables
                         h = 0
@@ -219,7 +218,7 @@ class MMDBSImage:
                     cv2.waitKey(5000)
 
                 # Create empty dictionary and add information about histogram of this cell
-                cell_histogram = {'horizontal_index': hor_index, 'vertical_index': ver_index}
+                cell_histogram = {'horizontal_index': hor_index, 'vertical_index': ver_index, 'values': {}}
 
                 # Loop over each value in pixel and assign bin to the h, s and v values
                 for (x, y), value in np.ndenumerate(horizontal_vertical_split_image):
@@ -229,10 +228,10 @@ class MMDBSImage:
 
                     # Increase the counter for this bin if exists
                     if bin in cell_histogram:
-                        cell_histogram[bin] = cell_histogram[bin] + 1
+                        cell_histogram['values'][bin] = cell_histogram['values'][bin] + 1
                     # HSV value does not exist yet => create it and set counter to 1
                     else:
-                        cell_histogram[bin] = 1
+                        cell_histogram['values'][bin] = 1
 
                 # Order dictionary and append it to the overall dictionary
                 # cell_histogram = collections.OrderedDict(sorted(cell_histogram.items()))
