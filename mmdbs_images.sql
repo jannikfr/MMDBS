@@ -1,4 +1,3 @@
--- auto-generated definition
 create table mmdbs_image
 (
   id                    serial       not null
@@ -6,8 +5,10 @@ create table mmdbs_image
     primary key,
   path                  varchar(255) not null,
   classification        varchar(255),
-  local_histogram       json,
+  local_histogram1      json,
   global_histogram      json,
-  global_edge_histogram json
+  global_edge_histogram json,
+  local_histogram2      json,
+  local_histogram3      json
 );
 

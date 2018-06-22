@@ -39,7 +39,7 @@ def do_db_search():
         # build image object
         temp_image = MMDBSImage()
         temp_image.set_image(thePath, '')
-        temp_image.extract_features('global_edge_histogram')
+        temp_image.extract_features(feat)
 
 
         return callHtmlPage(feat, sim, seg, eigenval, picanz, queryobject)
