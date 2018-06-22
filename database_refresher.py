@@ -1,4 +1,6 @@
 import os
+
+import controller
 import db_connection
 from mmdbs_image import MMDBSImage
 import datetime
@@ -14,13 +16,15 @@ print("The images are stored in ", path, ".")
 # Establish DB connection
 conn = db_connection.connect()
 
+MMDBSImages = db_connection.get_all_images(conn)
+
 # Loop trough all subdirectories of the given path if refresh = TRUE
 # The name of each subdirectory represents the class of the images inside
 
 # Clean up database.
 print("Clean up database.")
-#number_of_deleted_images = db_connection.delete_all_images(conn)
-#print(str(number_of_deleted_images), " images deleted in database.")
+number_of_deleted_images = db_connection.delete_all_images(conn)
+print(str(number_of_deleted_images), " images deleted in database.")
 
 for subdirectory in os.listdir(path):
 
@@ -40,7 +44,7 @@ for subdirectory in os.listdir(path):
                 # Build image object
                 temp_image = MMDBSImage()
                 temp_image.set_image(image_path, subdirectory)
-                temp_image.extract_features('all')
+                temp_image = controller.extract_all_features(temp_image)
 
                 # See outputs
                 # cv2.imwrite(image, temp_image.sobel_edge_detection)
