@@ -5,7 +5,7 @@ import cv2
 from flask import Flask, render_template, request
 import db_connection
 import feature_extractor
-from image import Image
+from mmdbs_image import MMDBSImage
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = '/'
@@ -41,8 +41,8 @@ def do_db_search():
         queryobject.save(thePath)
 
         # build image object
-        temp_image = Image()
-        temp_image.buildAttributes(thePath, '')
+        temp_image = MMDBSImage()
+        temp_image.set_image(thePath, '')
 
 
 
