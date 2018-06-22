@@ -1,8 +1,9 @@
 .idea/
 database.ini
 mmdbs.json
-source/
+templates/static/source/
 venv/
 snippets.py
 test.py
 uploadimage.png
+doc/
