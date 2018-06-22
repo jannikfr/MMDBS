@@ -1,9 +1,11 @@
 import os
 from flask import Flask, render_template, request
+
+import controller
 import db_connection
 from mmdbs_image import MMDBSImage
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 app.config['UPLOAD_FOLDER'] = '/'
 
 
@@ -24,7 +26,7 @@ def do_db_search():
         # read variables out of form
         result = request.form
         queryobject = request.files['picture']
-        feat = result['feature']
+        feature = result['feature']
         seg = result['segmentation']
         sim = result['similarity']
         eigenval = result['numberEigenvalues']
@@ -39,10 +41,9 @@ def do_db_search():
         # build image object
         temp_image = MMDBSImage()
         temp_image.set_image(thePath, '')
-        temp_image.extract_features(feat)
+        similiar_objects = controller.get_similar_objects(temp_image, feature, seg)
 
-
-        return callHtmlPage(feat, sim, seg, eigenval, picanz, queryobject)
+        return callHtmlPage(feature, sim, seg, eigenval, picanz, queryobject)
 
 
 def callHtmlPage(feat, sim, seg, eigenanz, picanz, qo):

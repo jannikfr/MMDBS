@@ -3,6 +3,8 @@ import json
 from configparser import ConfigParser
 import psycopg2
 
+from mmdbs_image import MMDBSImage
+
 
 def connect():
     """
@@ -63,16 +65,29 @@ def write_image_to_database(conn, image):
     :param image: image object, whose features need to be stored in the database
     """
 
-    sql = "INSERT INTO mmdbs_image(path, classification, local_histogram, global_histogram, global_edge_histogram) " \
-          "VALUES(%s, %s, %s, %s, %s) "
+    sql = "INSERT INTO mmdbs_image(" \
+          "path, " \
+          "classification, " \
+          "local_histogram1, " \
+          "local_histogram2, " \
+          "local_histogram3, " \
+          "global_histogram, " \
+          "global_edge_histogram) " \
+          "VALUES(%s, %s, %s, %s, %s, %s, %s) "
 
     try:
         # Create a new cursor
         cur = conn.cursor()
         # Execute the INSERT statement
-        cur.execute(sql, (
-            image.path, image.classification, json.dumps(image.local_histogram), json.dumps(image.global_histogram),
-            json.dumps(image.global_edge_histogram),))
+        cur.execute(sql,
+                    (image.path,
+                     image.classification,
+                     json.dumps(image.local_histogram_2_2),
+                     json.dumps(image.local_histogram_3_3),
+                     json.dumps(image.local_histogram_4_4),
+                     json.dumps(image.global_histogram),
+                     json.dumps(image.global_edge_histogram),)
+                    )
         # Commit the changes to the database
         conn.commit()
 
@@ -83,6 +98,44 @@ def write_image_to_database(conn, image):
     except (Exception, psycopg2.DatabaseError) as error:
         print("An error occurred in write_image_to_database().")
         print(error)
+
+
+def get_all_images(conn):
+    sql = "SELECT path, " \
+          "classification, " \
+          "local_histogram1, " \
+          "local_histogram2, " \
+          "local_histogram3, " \
+          "global_histogram, " \
+          "global_edge_histogram " \
+          "FROM mmdbs_image"
+
+    MMDBS_images = []
+
+    try:
+        # Create a new cursor
+        cur = conn.cursor()
+        # Execute the SELECT statement
+        cur.execute(sql)
+        rows = cur.fetchall()
+        print("Found images: ", cur.rowcount)
+        for row in rows:
+            temp_MMDBS_image = MMDBSImage()
+            temp_MMDBS_image.path = row[0]
+            temp_MMDBS_image.classification = row[1]
+            temp_MMDBS_image.local_histogram_2_2 = row[2]
+            temp_MMDBS_image.local_histogram_3_3 = row[3]
+            temp_MMDBS_image.local_histogram_4_4 = row[4]
+            temp_MMDBS_image.global_histogram = row[5]
+            temp_MMDBS_image.global_edge_histogram = row[6]
+            MMDBS_images.append(temp_MMDBS_image)
+        # Close communication with the database
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print("An error occurred in get_all_images().")
+        print(error)
+
+    return MMDBS_images
 
 
 def get_image(conn):
