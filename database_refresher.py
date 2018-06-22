@@ -1,6 +1,5 @@
 import os
-
-import controller
+from controller import Controller
 import db_connection
 from mmdbs_image import MMDBSImage
 import datetime
