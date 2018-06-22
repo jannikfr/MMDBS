@@ -17,10 +17,11 @@ def start():
     feat = None
     sim = None
     seg = None
+    classification = None
     eigenval = None
     similiar_objects = None
-    picanz = db_connection.get_count_images()
-    return callHtmlPage(feat, sim, seg, eigenval, picanz, queryobject, similiar_objects)
+    picanz = controller.get_number_of_mmdbs_images()
+    return callHtmlPage(feat, sim, seg, eigenval, picanz, queryobject, similiar_objects, classification)
 
 
 @app.route('/do_db_search', methods=['POST', 'GET'])
@@ -35,7 +36,7 @@ def do_db_search():
         eigenval = result['numberEigenvalues']
 
         # query picture amount
-        picanz = db_connection.get_count_images()
+        picanz = controller.get_number_of_mmdbs_images()
 
         # save uploaded Image on server
         thePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'uploadimage.jpg')
@@ -49,8 +50,9 @@ def do_db_search():
             path = similiar_object['mmdbs_image'].path
             pattern = re.compile('/static.+')
             similiar_object['mmdbs_image'].path = pattern.findall(path)[0]
-        return callHtmlPage(feature, sim, seg, eigenval, picanz, queryobject, similiar_objects)
+        classification='accordion'
+        return callHtmlPage(feature, sim, seg, eigenval, picanz, queryobject, similiar_objects, classification)
 
 
-def callHtmlPage(feat, sim, seg, eigenanz, picanz, qo, so):
-    return render_template('index.html', feat=feat, sim=sim, seg=seg, eigenanz=eigenanz, picanz=picanz, qo=qo, so=so)
+def callHtmlPage(feat, sim, seg, eigenanz, picanz, qo, so, cl):
+    return render_template('index.html', feat=feat, sim=sim, seg=seg, eigenanz=eigenanz, picanz=picanz, qo=qo, so=so, cl=cl)
