@@ -1,3 +1,4 @@
+import operator
 import os
 import re
 from flask import Flask, render_template, request
@@ -46,12 +47,22 @@ def do_db_search():
         temp_image = MMDBSImage()
         temp_image.set_image(thePath, '')
         similiar_objects = controller.get_similar_objects(temp_image, feature, seg)
+
+        classificationDictonary = {}
         for similiar_object in similiar_objects:
             path = similiar_object['mmdbs_image'].path
             pattern = re.compile('/static.+')
             similiar_object['mmdbs_image'].path = pattern.findall(path)[0]
-        classification='accordion'
-        return callHtmlPage(feature, sim, seg, eigenval, picanz, queryobject, similiar_objects, classification)
+           # theClassification = similiar_object['mmdbs_image'].classification
+
+          #  if theClassification in classificationDictonary:
+           #     classificationDictonary[theClassification]= classificationDictonary[theClassification] + 1
+            #else:
+             #   classificationDictonary.update({theClassification: 1})
+        #build a tupellist, sort it, take the last,take the first value of tupel...discusting but one line for Jannik
+        #most_used_classification = ((sorted(classificationDictonary.items(), key=operator.itemgetter(1)))[-1])[0]
+
+        return callHtmlPage(feature, sim, seg, eigenval, picanz, queryobject, similiar_objects, None)
 
 
 def callHtmlPage(feat, sim, seg, eigenanz, picanz, qo, so, cl):
