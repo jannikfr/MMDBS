@@ -15,6 +15,7 @@ class MMDBSImage:
         self.global_histogram = {}
         self.sobel_edges = np.empty
         self.global_edge_histogram = {}
+        self.global_hue_histogram = {}
 
     def set_image(self, path, classification):
         """
@@ -148,13 +149,13 @@ class MMDBSImage:
         return output
 
     @staticmethod
-    def extract_histograms_greyscale(greyscale_image, h_splits, v_splits, number_of_bins, show_cells, min_value,
-                                     max_value):
+    def extract_histograms_one_channel(image, h_splits, v_splits, number_of_bins, show_cells, min_value,
+                                       max_value):
         """
-        Split a given greyscale image in equal sized cells corresponding to the given number of vertical and horizontal splits,
+        Split a given one channel image (e.g. greyscale) in equal sized cells corresponding to the given number of vertical and horizontal splits,
         e.g. v_splits = 2 and h_splits=3 results in 6 cells. For each cell a histogram is computed whereby the colors are
         binned corresponding to the parameter number_of_bins.
-        :param greyscale_image: Greyscale image whose histograms need to be computed
+        :param image: One channel image whose histograms need to be computed
         :param h_splits: The number of horizontal splits.
         :param v_splits: The number of vertical splits.
         :param number_of_bins: The number of bins for grouping the greyscale range
@@ -172,7 +173,7 @@ class MMDBSImage:
         histogram['cell_histograms'] = []
 
         # Split along horizontal axis
-        horizontal_split_images = np.split(greyscale_image, h_splits, axis=0)
+        horizontal_split_images = np.split(image, h_splits, axis=0)
         for hor_index, horizontal_split_image in enumerate(horizontal_split_images):
 
             # Loop over split sub images and split each along vertical axis
@@ -191,11 +192,19 @@ class MMDBSImage:
                 # Loop over each value in pixel and assign bin to the h, s and v values
                 for (x, y), value in np.ndenumerate(horizontal_vertical_split_image):
 
-                    normalized_value = (value - min_value) / (max_value - min_value)
+                    if max_value == min_value:
+                        normalized_value = 0
+                    else:
+                        normalized_value = (value - min_value) / (max_value - min_value)
+                    if math.isnan(normalized_value):
+                        return {"Error_value_position_x": x, "Error_value_position_y": y, "Error_value": value}
+
                     bin = int(normalized_value * number_of_bins)
 
+                    bin = str(bin)
+
                     # Increase the counter for this bin if exists
-                    if bin in cell_histogram:
+                    if bin in cell_histogram['values']:
                         cell_histogram['values'][bin] = cell_histogram['values'][bin] + 1
                     # HSV value does not exist yet => create it and set counter to 1
                     else:
