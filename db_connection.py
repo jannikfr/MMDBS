@@ -1,5 +1,6 @@
 # !/usr/bin/python
 import json
+import sys
 from configparser import ConfigParser
 import psycopg2
 
@@ -72,8 +73,9 @@ def write_image_to_database(conn, image):
           "local_histogram2, " \
           "local_histogram3, " \
           "global_histogram, " \
-          "global_edge_histogram) " \
-          "VALUES(%s, %s, %s, %s, %s, %s, %s) "
+          "global_edge_histogram, " \
+          "global_hue_histogram) " \
+          "VALUES(%s, %s, %s, %s, %s, %s, %s, %s) "
 
     try:
         # Create a new cursor
@@ -86,7 +88,8 @@ def write_image_to_database(conn, image):
                      json.dumps(image.local_histogram_3_3),
                      json.dumps(image.local_histogram_4_4),
                      json.dumps(image.global_histogram),
-                     json.dumps(image.global_edge_histogram),)
+                     json.dumps(image.global_edge_histogram),
+                     json.dumps(image.global_hue_histogram),)
                     )
         # Commit the changes to the database
         conn.commit()
@@ -98,6 +101,7 @@ def write_image_to_database(conn, image):
     except (Exception, psycopg2.DatabaseError) as error:
         print("An error occurred in write_image_to_database().")
         print(error)
+        print(sys.exc_info()[0])
 
 
 def get_all_images(conn):
@@ -107,7 +111,8 @@ def get_all_images(conn):
           "local_histogram2, " \
           "local_histogram3, " \
           "global_histogram, " \
-          "global_edge_histogram " \
+          "global_edge_histogram, " \
+          "global_hue_histogram " \
           "FROM mmdbs_image"
 
     MMDBS_images = []
@@ -128,6 +133,7 @@ def get_all_images(conn):
             temp_MMDBS_image.local_histogram_4_4 = row[4]
             temp_MMDBS_image.global_histogram = row[5]
             temp_MMDBS_image.global_edge_histogram = row[6]
+            temp_MMDBS_image.global_hue_histogram = row[7]
             MMDBS_images.append(temp_MMDBS_image)
         # Close communication with the database
         cur.close()

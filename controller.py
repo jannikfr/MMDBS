@@ -1,3 +1,6 @@
+import math
+
+import cv2
 from operator import itemgetter
 import numpy as np
 import db_connection
@@ -19,9 +22,16 @@ class Controller(object):
         mmdbs_image.sobel_edges = mmdbs_image.extract_sobel_edges(mmdbs_image.image)
         min_edge_value = np.min(mmdbs_image.sobel_edges)
         max_edge_value = np.max(mmdbs_image.sobel_edges)
-        mmdbs_image.global_edge_histogram = mmdbs_image.extract_histograms_greyscale(mmdbs_image.sobel_edges, 1, 1, 64,
-                                                                                     False,
-                                                                                     min_edge_value, max_edge_value)
+        mmdbs_image.global_edge_histogram = mmdbs_image.extract_histograms_one_channel(mmdbs_image.sobel_edges, 1, 1,
+                                                                                       64,
+                                                                                       False,
+                                                                                       min_edge_value, max_edge_value)
+
+        h_image = mmdbs_image.image[:, :, 0]
+        min_h_value = np.min(h_image)
+        max_h_value = np.max(h_image)
+        mmdbs_image.global_hue_histogram = mmdbs_image.extract_histograms_one_channel(h_image, 1, 1, 64, False, min_h_value, max_h_value)
+
         return mmdbs_image
 
     def get_similar_objects(self, query_object, feature, seg):
@@ -49,7 +59,6 @@ class Controller(object):
             query_object.global_histogram = query_object.extract_histograms(query_object.image, 1, 1, [8, 2, 4], False)
 
             for mmdbs_image in all_mmdbs_images:
-
                 temp_mmdbs_image = {}
                 temp_mmdbs_image['mmdbs_image'] = mmdbs_image
 
@@ -64,10 +73,12 @@ class Controller(object):
             query_object.sobel_edges = query_object.extract_sobel_edges(query_object.image)
             min_edge_value = np.min(query_object.sobel_edges)
             max_edge_value = np.max(query_object.sobel_edges)
-            query_object.global_edge_histogram = query_object.extract_histograms_greyscale(query_object.sobel_edges, 1, 1,
-                                                                                           64,
-                                                                                           False,
-                                                                                           min_edge_value, max_edge_value)
+            query_object.global_edge_histogram = query_object.extract_histograms_one_channel(query_object.sobel_edges,
+                                                                                             1, 1,
+                                                                                             64,
+                                                                                             False,
+                                                                                             min_edge_value,
+                                                                                             max_edge_value)
         similar_objects = sorted(similar_objects, key=itemgetter('distance'))
         return similar_objects
 
