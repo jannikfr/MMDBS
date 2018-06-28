@@ -168,7 +168,7 @@ def get_count_images(conn):
         cur = conn.cursor()
         # Execute the SELECT statement
         cur.execute(sql)
-        return cur.fetchone()
+        return cur.fetchone()[0]
     except (Exception, psycopg2.DatabaseError) as error:
         print("An error occurred in get_count_images().")
         print(error)
