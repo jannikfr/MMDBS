@@ -8,7 +8,8 @@ print("Start time: ", datetime.datetime.now())
 
 # Set environment variables
 working_dir = os.path.dirname(os.path.realpath(__file__))
-path = working_dir + "/templates/static/source/"
+#path = working_dir + "/templates/static/source/"
+path = "static/source/"
 print("Working directory is ", working_dir + ".")
 print("The images are stored in ", path, ".")
 
