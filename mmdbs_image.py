@@ -269,10 +269,10 @@ class MMDBSImage:
     @staticmethod
     def extract_contours(image, sobel):
         """
-        Extract the 10 biggest contours with their area, arc length and border points.
+        Extract the 5 biggest contours with their area, arc length and border points.
         :param image: Image object, only needed for displaying purposes.
         :param sobel: Sobel edge data of this image.
-        :return: A dictionary containing the 0 biggest contours with their area, arc length and border points.
+        :return: A dictionary containing the 5 biggest contours with their area, arc length and border points.
         """
 
         contour_data = {}
@@ -302,7 +302,7 @@ class MMDBSImage:
         _, contours, hierarchy = cv2.findContours(canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         # Get 10 biggest contours based on their area
-        contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)[:5]
 
         # Display the 4 biggest contours for demonstration purposes
         # image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
