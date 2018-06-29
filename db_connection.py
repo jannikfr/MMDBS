@@ -74,8 +74,11 @@ def write_image_to_database(conn, image):
           "local_histogram3, " \
           "global_histogram, " \
           "global_edge_histogram, " \
-          "global_hue_histogram) " \
-          "VALUES(%s, %s, %s, %s, %s, %s, %s, %s) "
+          "global_hue_histogram," \
+          "color_moments, " \
+          "central_circle_color_histogram," \
+          "contours)" \
+          "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
 
     try:
         # Create a new cursor
@@ -89,7 +92,11 @@ def write_image_to_database(conn, image):
                      json.dumps(image.local_histogram_4_4),
                      json.dumps(image.global_histogram),
                      json.dumps(image.global_edge_histogram),
-                     json.dumps(image.global_hue_histogram),)
+                     json.dumps(image.global_hue_histogram),
+                     json.dumps(image.color_moments),
+                     json.dumps(image.central_circle_color_histogram),
+                     json.dumps(image.contours)
+                     ,)
                     )
         # Commit the changes to the database
         conn.commit()
@@ -112,7 +119,10 @@ def get_all_images(conn):
           "local_histogram3, " \
           "global_histogram, " \
           "global_edge_histogram, " \
-          "global_hue_histogram " \
+          "global_hue_histogram, " \
+          "color_moments, " \
+          "central_circle_color_histogram, " \
+          "contours " \
           "FROM mmdbs_image"
 
     MMDBS_images = []
@@ -134,6 +144,9 @@ def get_all_images(conn):
             temp_MMDBS_image.global_histogram = row[5]
             temp_MMDBS_image.global_edge_histogram = row[6]
             temp_MMDBS_image.global_hue_histogram = row[7]
+            temp_MMDBS_image.color_moments = row[8]
+            temp_MMDBS_image.central_circle_color_histogram = row[9]
+            temp_MMDBS_image.contours = row[10]
             MMDBS_images.append(temp_MMDBS_image)
         # Close communication with the database
         cur.close()
