@@ -242,10 +242,3 @@ class MMDBSImage:
             color_moments["channel_" + str(channel_index) + "_moment_3"] = (sum_moment_3 / channel.size) ** (1 / float(3))
 
         return color_moments
-
-
-
-if __name__ == '__main__':
-    temp_image = MMDBSImage()
-    temp_image.set_image("static/source/gerenuk/image_0007.jpg", "genuruk")
-    temp_image.extract_color_moments(temp_image.image)
