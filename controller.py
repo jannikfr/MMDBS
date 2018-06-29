@@ -33,13 +33,15 @@ class Controller(object):
         mmdbs_image.global_hue_histogram = mmdbs_image.extract_histograms_one_channel(h_image, 1, 1, 64, False,
                                                                                       min_h_value, max_h_value)
 
-        # New
+        # Color moments
         mmdbs_image.color_moments = mmdbs_image.extract_color_moments(mmdbs_image.image)
-        central_circle = mmdbs_image.get_central_circle(mmdbs_image.image)
+
+        # Get modified circle image and apply histogram on it
+        central_circle = mmdbs_image.get_central_circle(mmdbs_image.image.copy())
         mmdbs_image.central_circle_color_histogram = mmdbs_image.extract_histograms(central_circle, 1, 1, [8, 2, 4], False)
-        # Returns currently an empty dictionary, will be filled with new functions soon
-        # TODO: add functions to extract contours
-        mmdbs_image.contours = mmdbs_image.extract_contours(mmdbs_image.image)
+
+        # Extraction of contours. Needs sobel edge data
+        mmdbs_image.contours = mmdbs_image.extract_contours(mmdbs_image.image, mmdbs_image.sobel_edges)
 
         return mmdbs_image
 

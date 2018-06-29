@@ -250,12 +250,78 @@ class MMDBSImage:
 
     @staticmethod
     def get_central_circle(image):
+        """
+        Cut out a circle in the center of the image with and radius of 200px of the smallest dimension of the image.
+        The outer area is filled white.
+        :param image: Original three channel image
+        :return: Image with circle and white background.
+        """
+        # Huge width of the circle's line
         line_width = 1000
-        radius = int(min(image.shape[1], image.shape[0])*0.3)+int(line_width/2)
+        # Calculate the necessary radius of the image
+        radius = 100+int(line_width/2)
+        # Draw circle
         cv2.circle(image, (int(image.shape[1] / 2), (int(image.shape[0] / 2))), radius, (255, 255, 255), line_width)
+        # Convert back to HSV color space
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         return image
 
     @staticmethod
-    def extract_contours(image):
-        return {}
+    def extract_contours(image, sobel):
+        """
+
+        :param image:
+        :param sobel:
+        :return:
+        """
+
+        contour_data = {}
+
+        # Normalize sobel edges between 0 and 255
+        sobel = cv2.normalize(sobel, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F, dst=None)
+
+        # Convert to integers
+        sobel = np.uint8(sobel)
+
+        # Display converted sobel image
+        # cv2.imwrite("sobel.png", sobel)
+
+        # Apply threshold to image in order to reduce noise
+        ret, thresh = cv2.threshold(sobel, 220, 255, cv2.THRESH_TOZERO_INV)
+
+        # Display threshold result
+        # cv2.imwrite("thres.png", thresh)
+
+        # Apply canny edge detection. Clears edges.
+        canny = cv2.Canny(thresh, 80, 200, 5)
+
+        # Display canny result
+        # cv2.imwrite("canny.png", canny)
+
+        # Find contours based on canny edge detection and sobel filters
+        _, contours, hierarchy = cv2.findContours(canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Get 10 biggest contours based on their area
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
+
+        # Display the 4 biggest contours for demonstration purposes
+        # image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
+        # cv2.drawContours(image, contours, 0, (255, 0, 0), 2)
+        # cv2.drawContours(image, contours, 1, (0, 255, 0), 2)
+        # cv2.drawContours(image, contours, 2, (0, 0, 255), 2)
+        # cv2.drawContours(image, contours, 3, (0, 255, 255), 2)
+        # cv2.imwrite("test.png", image)
+
+        # Loop over the selected contours
+        for i, contour in enumerate(contours):
+
+            # Calculate area of contour
+            area = cv2.contourArea(contour)
+
+            # Calculate the number of points, which define this contour
+            perimeter = cv2.arcLength(contour, True)
+            points_of_contour = len(cv2.approxPolyDP(contour, 0.02 * perimeter, True))
+            contour_data[str(i)+'_area'] = area
+            contour_data[str(i)+'_points_of_contour'] = points_of_contour
+
+        return contour_data
