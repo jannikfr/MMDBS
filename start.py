@@ -13,15 +13,8 @@ controller = Controller()
 
 @app.route('/', methods=['POST', 'GET'])
 def start():
-    queryobject = None
-    feat = None
-    sim = None
-    seg = None
-    classification = None
-    eigenval = None
-    similiar_objects = None
     picanz = controller.get_number_of_mmdbs_images()
-    return callHtmlPage(feat, sim, seg, eigenval, picanz, queryobject, similiar_objects, classification)
+    return callHtmlPage('', '', '', '', picanz, None, None)
 
 
 @app.route('/do_db_search', methods=['POST', 'GET'])
@@ -32,7 +25,7 @@ def do_db_search():
         queryobject = request.files['picture']
         feature = result['feature']
         seg = result['segmentation']
-        sim = result['similarity']
+        distance_function = result['distance_function']
         eigenval = result['numberEigenvalues']
 
         # query picture amount
@@ -45,11 +38,10 @@ def do_db_search():
         # build image object
         temp_image = MMDBSImage()
         temp_image.set_image(thePath, '')
-        similiar_objects = controller.get_similar_objects(temp_image, feature, seg)
+        similiar_objects = controller.get_similar_objects(temp_image, feature, seg, distance_function)
 
-        classification='accordion'
-        return callHtmlPage(feature, sim, seg, eigenval, picanz, queryobject, similiar_objects, classification)
+        return callHtmlPage(feature, distance_function, seg, eigenval, picanz, queryobject, similiar_objects)
 
 
-def callHtmlPage(feat, sim, seg, eigenanz, picanz, qo, so, cl):
-    return render_template('index.html', feat=feat, sim=sim, seg=seg, eigenanz=eigenanz, picanz=picanz, qo=qo, so=so, cl=cl)
+def callHtmlPage(feat, distance_function, seg, eigenanz, picanz, qo, so):
+    return render_template('index.html', feat=feat, distance_function=distance_function, seg=seg, eigenanz=eigenanz, picanz=picanz, qo=qo, so=so)
