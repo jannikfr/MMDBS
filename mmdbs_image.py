@@ -17,6 +17,8 @@ class MMDBSImage:
         self.global_edge_histogram = {}
         self.global_hue_histogram = {}
         self.color_moments = {}
+        self.central_color_histogram = {}
+        self.contours = {}
 
     def set_image(self, path, classification):
         """
@@ -238,7 +240,23 @@ class MMDBSImage:
                 sum_moment_2 = sum_moment_2 + ((value - mean) ** 2)
                 sum_moment_3 = sum_moment_2 + ((value - mean) ** 3)
 
-            color_moments["channel_" + str(channel_index) + "_moment_2"] = (sum_moment_2 / channel.size) ** (1 / float(2))
-            color_moments["channel_" + str(channel_index) + "_moment_3"] = (sum_moment_3 / channel.size) ** (1 / float(3))
+            color_moments["channel_" + str(channel_index) + "_moment_2"] = (sum_moment_2 / channel.size) ** (
+                        1 / float(2))
+            color_moments["channel_" + str(channel_index) + "_moment_3"] = (sum_moment_3 / channel.size) ** (
+                        1 / float(3))
 
         return color_moments
+
+    @staticmethod
+    def get_central_circle(image):
+        line_width = 1000
+        radius = int(min(image.shape[1], image.shape[0])*0.3)+int(line_width/2)
+        cv2.circle(image, (int(image.shape[1] / 2), (int(image.shape[0] / 2))), radius, (255, 255, 255), line_width)
+        return image
+
+
+if __name__ == '__main__':
+    temp_image = MMDBSImage()
+    temp_image.set_image("static/source/gerenuk/image_0004.jpg", "genuruk")
+    #temp_image.extract_color_moments(temp_image.image)
+    circle_image = temp_image.get_central_circle(temp_image.image)
