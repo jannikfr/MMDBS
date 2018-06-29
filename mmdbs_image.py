@@ -16,6 +16,7 @@ class MMDBSImage:
         self.sobel_edges = np.empty
         self.global_edge_histogram = {}
         self.global_hue_histogram = {}
+        self.color_moments = {}
 
     def set_image(self, path, classification):
         """
@@ -215,3 +216,36 @@ class MMDBSImage:
                 histogram['cell_histograms'].append(cell_histogram)
 
             return histogram
+
+    @staticmethod
+    def extract_color_moments(image):
+        """
+        Extracts the first three color moments (mean, standard deviation and skewness)
+        :param image: Three channel image
+        :return: Dictionary containing the three moments for each channel
+        """
+        color_moments = {}
+
+        for channel_index in range(3):
+
+            channel = image[:, :, channel_index]
+            mean = np.mean(channel)
+            color_moments["channel_" + str(channel_index) + "_moment_1"] = mean
+
+            sum_moment_2 = 0.0
+            sum_moment_3 = 0.0
+            for value in np.nditer(channel):
+                sum_moment_2 = sum_moment_2 + ((value - mean) ** 2)
+                sum_moment_3 = sum_moment_2 + ((value - mean) ** 3)
+
+            color_moments["channel_" + str(channel_index) + "_moment_2"] = (sum_moment_2 / channel.size) ** (1 / float(2))
+            color_moments["channel_" + str(channel_index) + "_moment_3"] = (sum_moment_3 / channel.size) ** (1 / float(3))
+
+        return color_moments
+
+
+
+if __name__ == '__main__':
+    temp_image = MMDBSImage()
+    temp_image.set_image("static/source/gerenuk/image_0007.jpg", "genuruk")
+    temp_image.extract_color_moments(temp_image.image)
