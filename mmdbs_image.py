@@ -269,10 +269,10 @@ class MMDBSImage:
     @staticmethod
     def extract_contours(image, sobel):
         """
-
-        :param image:
-        :param sobel:
-        :return:
+        Extract the 10 biggest contours with their area, arc length and border points.
+        :param image: Image object, only needed for displaying purposes.
+        :param sobel: Sobel edge data of this image.
+        :return: A dictionary containing the 0 biggest contours with their area, arc length and border points.
         """
 
         contour_data = {}
@@ -318,10 +318,15 @@ class MMDBSImage:
             # Calculate area of contour
             area = cv2.contourArea(contour)
 
-            # Calculate the number of points, which define this contour
+            # Calculate the perimeter/arc length of the contour
+            # Assuming a closed contour
             perimeter = cv2.arcLength(contour, True)
-            points_of_contour = len(cv2.approxPolyDP(contour, 0.02 * perimeter, True))
+
+            # Calculate the number of points, which define this contour
+            points_of_contour = len(cv2.approxPolyDP(contour, 0.05 * perimeter, True))
+
             contour_data[str(i)+'_area'] = area
+            contour_data[str(i)+'_perimeter'] = perimeter
             contour_data[str(i)+'_points_of_contour'] = points_of_contour
 
         return contour_data
