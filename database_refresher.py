@@ -24,7 +24,7 @@ MMDBSImages = db_connection.get_all_images(conn)
 print("Clean up database.")
 number_of_deleted_images = db_connection.delete_all_images(conn)
 print(str(number_of_deleted_images), " images deleted in database.")
-
+the_controller = Controller()
 for subdirectory in os.listdir(path):
 
     # Build absolute subdirectory path
@@ -43,7 +43,7 @@ for subdirectory in os.listdir(path):
                 # Build image object
                 temp_image = MMDBSImage()
                 temp_image.set_image(image_path, subdirectory)
-                temp_image = Controller.extract_all_features(temp_image)
+                temp_image = the_controller.extract_all_features(temp_image)
 
                 # See outputs
                 # cv2.imwrite(image, temp_image.sobel_edge_detection)
