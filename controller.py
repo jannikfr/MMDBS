@@ -205,35 +205,49 @@ class Controller(object):
         :param number_of_results: The number of results, which should be considered for the calculation
         """
 
-        relevant = [0]
+        # Initialize parameters
         precision = []
         recall = []
+        accumulated_correct_objects = [0]
+        overall_correct_objects = 0
 
-        correct_objects = 0
-
+        # Loop over result object
         for result_object in similar_objects[:number_of_results]:
+
+            # Get classification of current result object
             result_object_classification = result_object['mmdbs_image'].classification
 
+            # Current result object is classified correctly
             if result_object_classification == correct_classification:
-                correct_objects = correct_objects + 1
-                relevant.append(relevant[-1]+1)
+                # Increase overall counter for correct result objects
+                overall_correct_objects = overall_correct_objects + 1
+                # Increase last value by 1 and add it to the timeline
+                accumulated_correct_objects.append(accumulated_correct_objects[-1]+1)
             else:
-                relevant.append(relevant[-1])
+                # Add the same as last value to the timeline
+                accumulated_correct_objects.append(accumulated_correct_objects[-1])
 
-        relevant = relevant[1:number_of_results]
-        for i, value in enumerate(relevant):
+        # Remove first initial value
+        accumulated_correct_objects = accumulated_correct_objects[1:number_of_results]
+
+        # Calculate precision and recall for the number_of_results
+        for i, value in enumerate(accumulated_correct_objects):
             k = i + 1
             precision.append(value/k)
-            recall.append(value/correct_objects)
+            recall.append(value/overall_correct_objects)
 
+        # Plot results
         fig, ax = plt.subplots()
         ax.set_title(r'Precision-Recall-Curve of the '+str(number_of_results)+' best results.')
         ax.set_xlabel('Recall')
         ax.set_ylabel('Precision')
-
         fig.tight_layout()
+
+        # Line chart with markers at each data point
         plt.plot(recall, precision, marker='o', markersize=5)
         plt.axis([0, 1.1, 0, 1.1])
+
+        # Export plot to file
         plt.savefig('precision_recall.png')
 
 
