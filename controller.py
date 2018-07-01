@@ -43,7 +43,7 @@ class Controller(object):
             query_object_feature = self.extract_global_hue_histogram_feature(query_object)
 
         elif feature == 'color_moments':
-            query_object_feature = query_object.extract_color_moments(query_object)
+            query_object_feature = self.extract_color_moments_feature(query_object)
 
         elif feature == 'central_circle_color_histogram':
             query_object_feature = self.extract_central_circle_color_histogram_feature(query_object)
@@ -128,7 +128,8 @@ class Controller(object):
 
     def get_value_for_distance_calculation(self, mmdbs_image_feature, feature):
         # choose correct value for calculation dependent on feature...temporary all do the same
-        mmdbs_image_feature = mmdbs_image_feature['cell_histograms'][0]['values']
+        if feature != 'color_moments' and feature != 'contours':
+            mmdbs_image_feature = mmdbs_image_feature['cell_histograms'][0]['values']
         return mmdbs_image_feature
 
     def extract_local_histogram_feature(self, mmdbs_image, seg):

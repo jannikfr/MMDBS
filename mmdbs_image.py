@@ -13,7 +13,7 @@ class MMDBSImage:
         self.local_histogram_3_3 = {}
         self.local_histogram_4_4 = {}
         self.global_histogram = {}
-        self.sobel_edges = np.empty
+        self.sobel_edges = None
         self.global_edge_histogram = {}
         self.global_hue_histogram = {}
         self.color_moments = {}
