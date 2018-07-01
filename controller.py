@@ -249,7 +249,7 @@ class Controller(object):
         plt.axis([0, 1.1, 0, 1.1])
 
         # Export plot to file
-        plt.savefig('precision_recall.png')
+        plt.savefig('static/precision_recall.png')
 
     @staticmethod
     def normalize_distances(similar_objects, number_of_results):
@@ -270,7 +270,7 @@ class Controller(object):
             # Calculate normalized distance
             distance = similar_object['distance']
             normalized_distance = (distance - min_distance)/(max_distance - min_distance)
-            similar_object['normalized_distance'] = normalized_distance
+            similar_object['normalized_distance'] = format(normalized_distance, '.2f')
 
         return similar_objects
 
