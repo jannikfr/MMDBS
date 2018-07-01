@@ -2,6 +2,7 @@ from operator import itemgetter
 import numpy as np
 import db_connection
 import distance_calculator
+import matplotlib.pyplot as plt
 
 
 class Controller(object):
@@ -193,3 +194,46 @@ class Controller(object):
     def extract_sobel_edges(self, mmdbs_image):
         mmdbs_image.sobel_edges = mmdbs_image.extract_sobel_edges(mmdbs_image.image)
         return mmdbs_image.sobel_edges
+
+    @staticmethod
+    def plot_precision_recall_curve(similar_objects, correct_classification, number_of_results):
+        """
+        Plots and saves a precision recall curve based on on the k best results.
+        The filename is precision_recall.png'.
+        :param similar_objects: Result set
+        :param correct_classification: Correct classication
+        :param number_of_results: The number of results, which should be considered for the calculation
+        """
+
+        relevant = [0]
+        precision = []
+        recall = []
+
+        correct_objects = 0
+
+        for result_object in similar_objects[:number_of_results]:
+            result_object_classification = result_object['mmdbs_image'].classification
+
+            if result_object_classification == correct_classification:
+                correct_objects = correct_objects + 1
+                relevant.append(relevant[-1]+1)
+            else:
+                relevant.append(relevant[-1])
+
+        relevant = relevant[1:number_of_results]
+        for i, value in enumerate(relevant):
+            k = i + 1
+            precision.append(value/k)
+            recall.append(value/correct_objects)
+
+        fig, ax = plt.subplots()
+        ax.set_title(r'Precision-Recall-Curve of the '+str(number_of_results)+' best results.')
+        ax.set_xlabel('Recall')
+        ax.set_ylabel('Precision')
+
+        fig.tight_layout()
+        plt.plot(recall, precision, marker='o', markersize=5)
+        plt.axis([0, 1.1, 0, 1.1])
+        plt.savefig('precision_recall.png')
+
+
