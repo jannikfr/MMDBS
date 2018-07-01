@@ -250,4 +250,27 @@ class Controller(object):
         # Export plot to file
         plt.savefig('precision_recall.png')
 
+    @staticmethod
+    def normalize_distances(similar_objects, number_of_results):
+        """
+        Normalize the distances linearly.
+        :param similar_objects: Result set
+        :param number_of_results: The number of results, which should be considered for the calculation
+        :return: The Result set array enriched by the attribute 'normalized_distance'
+        """
+
+        # Get lower and upper boundary
+        min_distance = similar_objects[0]['distance']
+        max_distance = similar_objects[number_of_results-1]['distance']
+
+        # Loop over result set
+        for similar_object in similar_objects[:number_of_results]:
+
+            # Calculate normalized distance
+            distance = similar_object['distance']
+            normalized_distance = (distance - min_distance)/(max_distance - min_distance)
+            similar_object['normalized_distance'] = normalized_distance
+
+        return similar_objects
+
 

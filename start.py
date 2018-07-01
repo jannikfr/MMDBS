@@ -48,11 +48,12 @@ def do_db_search():
         # build image object
         temp_image = MMDBSImage()
         temp_image.set_image(thePath, '')
-        similiar_objects = controller.get_similar_objects(temp_image, feature, seg, distance_function)
+        similar_objects = controller.get_similar_objects(temp_image, feature, seg, distance_function)
 
-        controller.plot_precision_recall_curve(similiar_objects, similiar_objects[0]['mmdbs_image'].classification, amount_results)
+        controller.plot_precision_recall_curve(similar_objects, similar_objects[0]['mmdbs_image'].classification, amount_results)
+        similar_objects = controller.normalize_distances(similar_objects, amount_results)
 
-        return callHtmlPage(feature, distance_function, seg, eigenval, picanz, queryobject, similiar_objects, feature_methods, distance_functions, segments, amount_results)
+        return callHtmlPage(feature, distance_function, seg, eigenval, picanz, queryobject, similar_objects, feature_methods, distance_functions, segments, amount_results)
 
 
 def callHtmlPage(feat, selected_distance_function, seg, eigenanz, picanz, qo, so, fm, df, segs, ar):
