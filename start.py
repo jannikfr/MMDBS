@@ -31,7 +31,7 @@ def do_db_search():
         # read variables out of form
         result = request.form
         queryobject = request.files['picture']
-        feature = request.form.getlist('feature')
+        feature_list = request.form.getlist('feature')
         seg = result['segmentation']
         distance_function = result['distance_function']
         eigenval = result['numberEigenvalues']
@@ -51,7 +51,7 @@ def do_db_search():
         temp_image.set_image(upload_image_path, '')
 
         # calculate distances to all images in database
-        similar_objects = controller.get_similar_objects(temp_image, feature, seg, distance_function)
+        similar_objects = controller.get_similar_objects(temp_image, feature_list, seg, distance_function)
 
         # prepare upload path for HTML
         upload_image_path = '/' + upload_image_path
@@ -62,7 +62,7 @@ def do_db_search():
         # normalize distances
         similar_objects = controller.normalize_distances(similar_objects, amount_results)
 
-        return callHtmlPage(feature, distance_function, seg, eigenval, picanz, queryobject, similar_objects, feature_methods, distance_functions, segments, amount_results, precision_recall_path, upload_image_path)
+        return callHtmlPage(feature_list, distance_function, seg, eigenval, picanz, queryobject, similar_objects, feature_methods, distance_functions, segments, amount_results, precision_recall_path, upload_image_path)
 
 
 def callHtmlPage(feat, selected_distance_function, seg, eigenanz, picanz, qo, so, fm, df, segs, ar, prp, up):
@@ -77,7 +77,6 @@ def get_feature_methods():
     methods.append(['color_moments','Color Moments'])
     methods.append(['central_circle_color_histogram', 'Central Circle Color Histogram'])
     methods.append(['contours', 'Contours'])
-    methods.append(['all', 'All'])
     return methods
 
 def get_distance_functions():
