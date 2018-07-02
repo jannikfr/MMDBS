@@ -1,24 +1,58 @@
 import math
 from operator import itemgetter
-
 import numpy as np
-
 
 
 def calculate_distance(feature1_dic, feature2_dic, distance_function, controller):
     distance = 0.0
+
     if distance_function == 'euclidean_distance':
+        # Loop over features and sum up the euclidean distances per feature
         for key, value in feature1_dic.items():
             distance = distance + calculate_euclidean_distance(value, feature2_dic[key])
-    elif distance_function == 'quadratic_form_distance':
-        if len(feature1_dic) > 1:
-            weight_matrix = transform_dic_to_matrix_diag(controller.weight_dic)
-            distance = calculate_quadratic_form_distance(feature1_dic, feature1_dic, weight_matrix)
-        else:
-            for key, value in feature1_dic.items():
-                distance = distance + calculate_euclidean_distance(value, feature2_dic[key])
 
+    elif distance_function == 'cosine_distance':
+        # Loop over features and sum up the Cosine distances per feature
+        for key, value in feature1_dic.items():
+            distance = distance + calculate_cosine_distance(value, feature2_dic[key])
+
+    elif distance_function == 'quadratic_form_distance':
+        # Loop over features and sum up the quadratic form distances per feature
+        for key, value in feature1_dic.items():
+            # Generate weighting matrix
+            # Need to have the same length as the length of the feature vectors
+            number_of_attributes = len(get_same_key_set(value, feature2_dic[key])[0])
+            weighting_matrix = np.ones((number_of_attributes, number_of_attributes))
+            # Calculate distance
+            distance = distance + calculate_quadratic_form_distance(value, feature2_dic[key], weighting_matrix)
+
+    elif distance_function == 'weighted_euclidean_distance':
+        # Loop over features and sum up weighted euclidean distances per feature
+        weighting_matrix = controller.weight_dic
+        for key, value in feature1_dic.items():
+            weight = weighting_matrix[key]
+            distance = distance + calculate_euclidean_distance(value, feature2_dic[key]) * weight
     return distance
+
+
+def get_same_key_set(a, b):
+    """
+    Calculate the union set of keys and fill the delta to each dictionary with value 0.
+    :param a: A dictionary
+    :param b: A dictionary
+    :return: The dictionaries a and b enriched with missing keys of the other with value 0.
+    """
+    # Get the common set of keys
+    keys = {**a, **b}.keys()
+
+    # Loop over the set of keys
+    for key in keys:
+        if key not in a:
+            a[key] = 0
+        if key not in b:
+            b[key] = 0
+
+    return a, b
 
 
 def calculate_euclidean_distance(feature1, feature2):
@@ -76,11 +110,13 @@ def calculate_cosine_distance(a, b):
     numerator = math.sqrt(sum_a_times_b)
     denominator = math.sqrt(sum_a_times_a)*math.sqrt(sum_b_times_b)
 
-    cosine_distance = 1 - (numerator/denominator)
+    if denominator != 0:
+        cosine_distance = 1 - (numerator/denominator)
+    else:
+        cosine_distance = -1
 
     # Adjust cosine distance that 1 (best) => 0 and -1 (worst) => 2
-    cosine_distance = cosine_distance - 1
-    cosine_distance = cosine_distance * (- 1)
+    cosine_distance = cosine_distance - 1.0
 
     return cosine_distance
 
@@ -124,6 +160,8 @@ def calculate_quadratic_form_distance(feature1_dic, feature2_dic, weighting_matr
     Computes the Quadratic Form distance between two dictionaries assuming the same key set.
     """
 
+    feature1_dic, feature2_dic = get_same_key_set(feature1_dic, feature2_dic)
+
     # Transform dictionaries into vectors
     feature1_vec = transform_dic_to_vector(feature1_dic)
     feature2_vec = transform_dic_to_vector(feature2_dic)
@@ -144,5 +182,3 @@ def calculate_quadratic_form_distance(feature1_dic, feature2_dic, weighting_matr
     quadratic_form_distance = np.sqrt(np.sum(product))
 
     return quadratic_form_distance
-
-
