@@ -1,4 +1,3 @@
-import os
 import re
 from flask import Flask, render_template, request
 from controller import Controller
@@ -19,7 +18,7 @@ def start():
     distance_functions = get_distance_functions()
     segments = get_segments()
     amount_results = 20
-    return callHtmlPage('', '', '', '', picanz, None, None, feature_methods, distance_functions, segments, amount_results)
+    return callHtmlPage('', '', '', '', picanz, None, None, feature_methods, distance_functions, segments, amount_results, None, None)
 
 
 @app.route('/do_db_search', methods=['POST', 'GET'])
@@ -41,23 +40,33 @@ def do_db_search():
         # query picture amount
         picanz = controller.get_number_of_mmdbs_images()
 
+        # delete images from last run
+        # controller.delete_images_on_server()
+
         # save uploaded Image on server
-        thePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'uploadimage.jpg')
-        queryobject.save(thePath)
+        upload_image_path = controller.get_upload_image_path(queryobject)
 
         # build image object
         temp_image = MMDBSImage()
-        temp_image.set_image(thePath, '')
+        temp_image.set_image(upload_image_path, '')
+
+        # calculate distances to all images in database
         similar_objects = controller.get_similar_objects(temp_image, feature, seg, distance_function)
 
-        controller.plot_precision_recall_curve(similar_objects, similar_objects[0]['mmdbs_image'].classification, amount_results)
+        # prepare upload path for HTML
+        upload_image_path = '/' + upload_image_path
+
+        # do precision recall diagramm
+        precision_recall_path = '/' + controller.plot_precision_recall_curve(similar_objects, similar_objects[0]['mmdbs_image'].classification, amount_results)
+
+        # normalize distances
         similar_objects = controller.normalize_distances(similar_objects, amount_results)
 
-        return callHtmlPage(feature, distance_function, seg, eigenval, picanz, queryobject, similar_objects, feature_methods, distance_functions, segments, amount_results)
+        return callHtmlPage(feature, distance_function, seg, eigenval, picanz, queryobject, similar_objects, feature_methods, distance_functions, segments, amount_results, precision_recall_path, upload_image_path)
 
 
-def callHtmlPage(feat, selected_distance_function, seg, eigenanz, picanz, qo, so, fm, df, segs, ar):
-    return render_template('index.html', feat=feat, sdf=selected_distance_function, seg=seg, eigenanz=eigenanz, picanz=picanz, qo=qo, so=so, fm=fm, df=df, segs=segs, ar=ar)
+def callHtmlPage(feat, selected_distance_function, seg, eigenanz, picanz, qo, so, fm, df, segs, ar, prp, up):
+    return render_template('index.html', feat=feat, sdf=selected_distance_function, seg=seg, eigenanz=eigenanz, picanz=picanz, qo=qo, so=so, fm=fm, df=df, segs=segs, ar=ar , prp=prp, up=up)
 
 def get_feature_methods():
     methods =[]

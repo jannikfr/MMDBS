@@ -1,7 +1,10 @@
+import re
 from operator import itemgetter
 import numpy as np
+import os
 import db_connection
 import distance_calculator
+from random import randint
 import matplotlib.pyplot as plt
 
 
@@ -248,8 +251,13 @@ class Controller(object):
         plt.plot(recall, precision, marker='o', markersize=5)
         plt.axis([0, 1.1, 0, 1.1])
 
+        # create unique filename
+        path = 'static/precision' + str(randint(0, 100000)) + '.png'
+
         # Export plot to file
-        plt.savefig('static/precision_recall.png')
+        plt.savefig(path)
+
+        return path
 
     @staticmethod
     def normalize_distances(similar_objects, number_of_results):
@@ -274,4 +282,15 @@ class Controller(object):
 
         return similar_objects
 
+    @staticmethod
+    def get_upload_image_path(queryobject):
+        upload_image_path = 'static/uploadimage' + str(randint(0, 100000)) + '.jpg'
+        save_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), upload_image_path)
+        queryobject.save(save_path)
+        return upload_image_path
 
+    # @staticmethod
+    # def delete_images_on_server():
+        # for f in os.listdir(os.path.join(os.path.dirname(os.path.realpath(__file__)),'static')):
+            # if re.search(pattern, f):
+            #   os.remove(os.path.join(dir, f))
