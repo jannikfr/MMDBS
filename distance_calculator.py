@@ -48,6 +48,43 @@ def calculate_euclidean_distance(feature1, feature2):
     return euclidean_distance
 
 
+def calculate_cosine_distance(a, b):
+    """
+    Computes the Cosine distance between two dictionaries.
+    """
+
+    sum_a_times_a = 0.0
+    sum_a_times_b = 0.0
+    sum_b_times_b = 0.0
+
+    # Get the common set of keys
+    keys = {**a, **b}.keys()
+
+    # Loop over the set of keys
+    for key in keys:
+        a_value = 0
+        b_value = 0
+        if key in a:
+            a_value = a[key]
+        if key in b:
+            b_value = b[key]
+
+        sum_a_times_a = sum_a_times_a + a_value**2
+        sum_a_times_b = sum_a_times_b + a_value * b_value
+        sum_b_times_b = sum_b_times_b + b_value ** 2
+
+    numerator = math.sqrt(sum_a_times_b)
+    denominator = math.sqrt(sum_a_times_a)*math.sqrt(sum_b_times_b)
+
+    cosine_distance = 1 - (numerator/denominator)
+
+    # Adjust cosine distance that 1 (best) => 0 and -1 (worst) => 2
+    cosine_distance = cosine_distance - 1
+    cosine_distance = cosine_distance * (- 1)
+
+    return cosine_distance
+
+
 def transform_dic_to_matrix_diag(dic):
     """
     Transforms a dictionary into a matrix with the values on the diagonal, ordered by the key
@@ -84,7 +121,7 @@ def transform_dic_to_vector(dic):
 
 def calculate_quadratic_form_distance(feature1_dic, feature2_dic, weighting_matrix):
     """
-    Computes the Euclidean distance between two dictionaries.
+    Computes the Quadratic Form distance between two dictionaries assuming the same key set.
     """
 
     # Transform dictionaries into vectors
@@ -107,3 +144,5 @@ def calculate_quadratic_form_distance(feature1_dic, feature2_dic, weighting_matr
     quadratic_form_distance = np.sqrt(np.sum(product))
 
     return quadratic_form_distance
+
+
