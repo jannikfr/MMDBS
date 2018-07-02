@@ -136,7 +136,7 @@ class Controller(object):
 
         # call distance function for calculation
         distance = distance_calculator.calculate_distance(mmdbs_image_feature_value_dic, query_object_feature_value_dic,
-                                                          distance_function, selfs)
+                                                          distance_function, self)
         # set distance as value
         mmdbs_image_distance_dictonary['distance'] = distance
 
