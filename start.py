@@ -18,15 +18,15 @@ def start():
     distance_functions = get_distance_functions()
     segments = get_segments()
     amount_results = 20
-    return callHtmlPage('', '', '', '', picanz, None, None, feature_methods, distance_functions, segments, amount_results, None, None)
+    return callHtmlPage('', '', '',  picanz, None, None, feature_methods, distance_functions, segments, amount_results, None, None, controller)
 
 
 @app.route('/do_db_search', methods=['POST', 'GET'])
 def do_db_search():
     if request.method == 'POST':
-        feature_methods = get_feature_methods()
-        distance_functions = get_distance_functions()
-        segments = get_segments()
+        feature_methods_list = get_feature_methods()
+        distance_functions_list = get_distance_functions()
+        segments_list = get_segments()
 
         # read variables out of form
         result = request.form
@@ -34,8 +34,10 @@ def do_db_search():
         feature_list = request.form.getlist('feature')
         seg = result['segmentation']
         distance_function = result['distance_function']
-        eigenval = result['numberEigenvalues']
         amount_results = int(result['amount_results'])
+        for feature_method in feature_list:
+            my_result = float(result[feature_method + '/'])
+            controller.weight_dic[feature_method] = my_result
 
         # query picture amount
         picanz = controller.get_number_of_mmdbs_images()
@@ -62,11 +64,11 @@ def do_db_search():
         # normalize distances
         similar_objects = controller.normalize_distances(similar_objects, amount_results)
 
-        return callHtmlPage(feature_list, distance_function, seg, eigenval, picanz, queryobject, similar_objects, feature_methods, distance_functions, segments, amount_results, precision_recall_path, upload_image_path)
+        return callHtmlPage(feature_list, distance_function, seg, picanz, queryobject, similar_objects, feature_methods_list, distance_functions_list, segments_list, amount_results, precision_recall_path, upload_image_path, controller)
 
 
-def callHtmlPage(feat, selected_distance_function, seg, eigenanz, picanz, qo, so, fm, df, segs, ar, prp, up):
-    return render_template('index.html', feat=feat, sdf=selected_distance_function, seg=seg, eigenanz=eigenanz, picanz=picanz, qo=qo, so=so, fm=fm, df=df, segs=segs, ar=ar , prp=prp, up=up)
+def callHtmlPage(feat, selected_distance_function, seg, picanz, qo, so, fm, df, segs, ar, prp, up, cont):
+    return render_template('index.html', feat=feat, sdf=selected_distance_function, seg=seg, picanz=picanz, qo=qo, so=so, fm=fm, df=df, segs=segs, ar=ar , prp=prp, up=up, controller=cont)
 
 def get_feature_methods():
     methods =[]
