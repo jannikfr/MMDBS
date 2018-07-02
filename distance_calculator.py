@@ -10,7 +10,7 @@ def calculate_distance(feature1_dic, feature2_dic, distance_function, controller
     if distance_function == 'euclidean_distance':
         for key, value in feature1_dic.items():
             distance = distance + calculate_euclidean_distance(value, feature2_dic[key])
-    if distance_function == 'cosine_distance':
+    elif distance_function == 'cosine_distance':
         for key, value in feature1_dic.items():
             distance = distance + calculate_cosine_distance(value, feature2_dic[key])
     elif distance_function == 'quadratic_form_distance':
@@ -19,6 +19,11 @@ def calculate_distance(feature1_dic, feature2_dic, distance_function, controller
             number_of_attributes = len(get_same_key_set(value, feature2_dic[key])[0])
             weighting_matrix = np.ones((number_of_attributes, number_of_attributes))
             distance = distance + calculate_quadratic_form_distance(value, feature2_dic[key], weighting_matrix)
+    elif distance_function == 'weighted_euclidean_distance':
+        weighting_matrix = controller.weight_dic
+        for key, value in feature1_dic.items():
+            weight = weighting_matrix[key]
+            distance = distance + calculate_euclidean_distance(value, feature2_dic[key]) * weight
     return distance
 
 
