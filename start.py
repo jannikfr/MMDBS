@@ -31,7 +31,7 @@ def do_db_search():
         # read variables out of form
         result = request.form
         queryobject = request.files['picture']
-        feature = result['feature']
+        feature = request.form.getlist('feature')
         seg = result['segmentation']
         distance_function = result['distance_function']
         eigenval = result['numberEigenvalues']

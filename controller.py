@@ -13,13 +13,15 @@ class Controller(object):
     def __init__(self):
         self.conn = db_connection.connect()
         self.mmdbs_data = db_connection.get_all_images(self.conn)
-        self.weight_global_histogram = 1
-        self.weight_local_histogram = 1
-        self.weight_global_edge_histogram = 1
-        self.weight_global_hue_histogram = 1
-        self.weight_color_moments = 1 
-        self.weight_central_circle_color_histogram = 1
-        self.weight_contours = 1
+        self.weight_dic = {}
+        self.weight_dic['global_histogram'] = 1
+        self.weight_dic['local_histogram'] = 1
+        self.weight_dic['global_edge_histogram'] = 1
+        self.weight_dic['global_hue_histogram'] = 1
+        self.weight_dic['color_moments'] = 1
+        self.weight_dic['central_circle_color_histogram'] = 1
+        self.weight_dic['contours'] = 1
+
 
     def extract_all_features(self, mmdbs_image):
         mmdbs_image.global_histogram = self.extract_global_histogram_feature(mmdbs_image)
@@ -34,63 +36,65 @@ class Controller(object):
 
         return mmdbs_image
 
-    def get_similar_objects(self, query_object, feature, seg, distance_function):
+    def get_similar_objects(self, query_object, feature_list, seg, distance_function):
         """
         Extracts and sets the feature as attributes of the MMDBSImage object.
         :param feature: String identifier of the feature.
         """
+        query_object_feature_dic = {}
         # extract features of query object corresponding the parameters
-        if feature == 'local_histogram':
-            query_object_feature_dic = {feature: self.extract_local_histogram_feature(query_object, seg)}
+        for feature in feature_list:
+            if feature == 'local_histogram':
+                query_object_feature_dic[feature] = self.extract_local_histogram_feature(query_object, seg)
+            
+            elif feature == 'global_histogram':
+                query_object_feature_dic[feature] = self.extract_global_histogram_feature(query_object)
 
-        elif feature == 'global_histogram':
-            query_object_feature_dic = {feature: self.extract_global_histogram_feature(query_object)}
+            elif feature == 'global_edge_histogram':
+                query_object_feature_dic[feature] = self.extract_global_edge_histogram_feature(query_object)
 
-        elif feature == 'global_edge_histogram':
-            query_object_feature_dic = {feature: self.extract_global_edge_histogram_feature(query_object)}
+            elif feature == 'global_hue_histogram':
+                query_object_feature_dic[feature] = self.extract_global_hue_histogram_feature(query_object)
 
-        elif feature == 'global_hue_histogram':
-            query_object_feature_dic = {feature: self.extract_global_hue_histogram_feature(query_object)}
+            elif feature == 'color_moments':
+                query_object_feature_dic[feature] = self.extract_color_moments_feature(query_object)
 
-        elif feature == 'color_moments':
-            query_object_feature_dic = {feature: self.extract_color_moments_feature(query_object)}
+            elif feature == 'central_circle_color_histogram':
+                query_object_feature_dic[feature] = self.extract_central_circle_color_histogram_feature(query_object)
 
-        elif feature == 'central_circle_color_histogram':
-            query_object_feature_dic = {feature: self.extract_central_circle_color_histogram_feature(query_object)}
+            elif feature == 'contours':
+                query_object_feature_dic[feature] = self.extract_contours_feature(query_object)
 
-        elif feature == 'contours':
-            query_object_feature_dic = {feature: self.extract_contours_feature(query_object)}
-
-        elif feature == 'all':
-            query_object = self.extract_all_features(query_object)
-            query_object_feature_dic = self.get_all_features_dic(query_object)
+            elif feature == 'all':
+                query_object = self.extract_all_features(query_object)
+                query_object_feature_dic = self.get_all_features_dic(query_object)
 
         # compute all distances for the selected feature
-        similar_objects = self.get_all_distances(query_object_feature_dic, feature, seg, distance_function)
+        similar_objects = self.get_all_distances(query_object_feature_dic, feature_list, seg, distance_function)
         # order list by distance
         similar_objects = sorted(similar_objects, key=itemgetter('distance'))
         return similar_objects
 
-    def get_all_distances(self, query_object_feature_dic, feature, seg, distance_function):
+    def get_all_distances(self, query_object_feature_dic, feature_list, seg, distance_function):
         all_mmdbs_images = self.mmdbs_data
         similar_objects = []
         # loop over all images
         for mmdbs_image in all_mmdbs_images:
             # get distance between query object and mmdbs_image for this parameter and append it to the list
             similar_objects.append(
-                self.get_distance(query_object_feature_dic, feature, seg, distance_function, mmdbs_image))
+                self.get_distance(query_object_feature_dic, feature_list, seg, distance_function, mmdbs_image))
 
         return similar_objects
 
     def get_number_of_mmdbs_images(self):
         return db_connection.get_count_images(self.conn)
 
-    def get_distance(self, query_object_feature_dic, feature, seg, distance_function, mmdbs_image):
+    def get_distance(self, query_object_feature_dic, feature_list, seg, distance_function, mmdbs_image):
         # read the selected feature from the mmdbs_image (database object)
-        mmdbs_image_feature_dic = self.get_mmdbs_image_feature_dic(feature, seg, mmdbs_image)
+        mmdbs_image_feature_dic = self.get_mmdbs_image_feature_dic(feature_list, seg, mmdbs_image)
         # build the mmdbs_image_distance dic with mmdbs_image:distance
         return self.get_mmdbs_image_distance_dictionary(mmdbs_image_feature_dic, query_object_feature_dic, distance_function,
-                                                        mmdbs_image, feature)
+                                                        mmdbs_image, feature_list)
 
     def get_mmdbs_image_feature_dic(self, feature, seg, mmdbs_image):
         # read the selected feature from the mmdbs_image

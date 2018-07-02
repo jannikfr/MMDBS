@@ -49,23 +49,8 @@ def calculate_quadratic_form_distance(feature1_dic, feature2_dic, controller):
     Computes the Euclidean distance between two dictionaries.
     """
     for key, value in feature1_dic.items():
-        weight_for_key = get_weight_for_key(key, controller)
+        weight_for_key = controller.weight_dic[key]
         # do crazy shit with value + feature2_dic[key] and weight_for_key
 
 
 
-def get_weight_for_key(key, controller):
-    if key == 'global_histogram':
-        return controller.weight_global_histogram
-    if key == 'local_histogram':
-        return controller.weight_local_histogram
-    if key == 'global_edge_histogram':
-        return controller.weight_global_edge_histogram
-    if key == 'global_hue_histogram':
-        return controller.weight_global_hue_histogram
-    if key == 'color_moments':
-        return controller.weight_color_moments
-    if key == 'central_circle_color_histogram':
-        return controller.weight_central_circle_color_histogram
-    if key == 'contours':
-        return controller.weight_contours
