@@ -3,22 +3,31 @@ from operator import itemgetter
 import numpy as np
 
 
-
 def calculate_distance(feature1_dic, feature2_dic, distance_function, controller):
     distance = 0.0
+
     if distance_function == 'euclidean_distance':
+        # Loop over features and sum up the euclidean distances per feature
         for key, value in feature1_dic.items():
             distance = distance + calculate_euclidean_distance(value, feature2_dic[key])
+
     elif distance_function == 'cosine_distance':
+        # Loop over features and sum up the Cosine distances per feature
         for key, value in feature1_dic.items():
             distance = distance + calculate_cosine_distance(value, feature2_dic[key])
+
     elif distance_function == 'quadratic_form_distance':
-        # weight_matrix = transform_dic_to_matrix_diag(controller.weight_dic)
+        # Loop over features and sum up the quadratic form distances per feature
         for key, value in feature1_dic.items():
+            # Generate weighting matrix
+            # Need to have the same length as the length of the feature vectors
             number_of_attributes = len(get_same_key_set(value, feature2_dic[key])[0])
             weighting_matrix = np.ones((number_of_attributes, number_of_attributes))
+            # Calculate distance
             distance = distance + calculate_quadratic_form_distance(value, feature2_dic[key], weighting_matrix)
+
     elif distance_function == 'weighted_euclidean_distance':
+        # Loop over features and sum up weighted euclidean distances per feature
         weighting_matrix = controller.weight_dic
         for key, value in feature1_dic.items():
             weight = weighting_matrix[key]
@@ -27,6 +36,12 @@ def calculate_distance(feature1_dic, feature2_dic, distance_function, controller
 
 
 def get_same_key_set(a, b):
+    """
+    Calculate the union set of keys and fill the delta to each dictionary with value 0.
+    :param a: A dictionary
+    :param b: A dictionary
+    :return: The dictionaries a and b enriched with missing keys of the other with value 0.
+    """
     # Get the common set of keys
     keys = {**a, **b}.keys()
 
@@ -95,7 +110,10 @@ def calculate_cosine_distance(a, b):
     numerator = math.sqrt(sum_a_times_b)
     denominator = math.sqrt(sum_a_times_a)*math.sqrt(sum_b_times_b)
 
-    cosine_distance = 1 - (numerator/denominator)
+    if denominator != 0:
+        cosine_distance = 1 - (numerator/denominator)
+    else:
+        cosine_distance = -1
 
     # Adjust cosine distance that 1 (best) => 0 and -1 (worst) => 2
     cosine_distance = cosine_distance - 1.0
