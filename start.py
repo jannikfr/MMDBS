@@ -77,6 +77,7 @@ def get_feature_methods():
     methods.append(['color_moments','Color Moments'])
     methods.append(['central_circle_color_histogram', 'Central Circle Color Histogram'])
     methods.append(['contours', 'Contours'])
+    methods.append(['all', 'All'])
     return methods
 
 def get_distance_functions():

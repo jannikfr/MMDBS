@@ -13,6 +13,13 @@ class Controller(object):
     def __init__(self):
         self.conn = db_connection.connect()
         self.mmdbs_data = db_connection.get_all_images(self.conn)
+        self.weight_global_histogram = 1
+        self.weight_local_histogram = 1
+        self.weight_global_edge_histogram = 1
+        self.weight_global_hue_histogram = 1
+        self.weight_color_moments = 1 
+        self.weight_central_circle_color_histogram = 1
+        self.weight_contours = 1
 
     def extract_all_features(self, mmdbs_image):
         mmdbs_image.global_histogram = self.extract_global_histogram_feature(mmdbs_image)
@@ -34,106 +41,114 @@ class Controller(object):
         """
         # extract features of query object corresponding the parameters
         if feature == 'local_histogram':
-            query_object_feature = self.extract_local_histogram_feature(query_object, seg)
+            query_object_feature_dic = {feature: self.extract_local_histogram_feature(query_object, seg)}
 
         elif feature == 'global_histogram':
-            query_object_feature = self.extract_global_histogram_feature(query_object)
+            query_object_feature_dic = {feature: self.extract_global_histogram_feature(query_object)}
 
         elif feature == 'global_edge_histogram':
-            query_object_feature = self.extract_global_edge_histogram_feature(query_object)
+            query_object_feature_dic = {feature: self.extract_global_edge_histogram_feature(query_object)}
 
         elif feature == 'global_hue_histogram':
-            query_object_feature = self.extract_global_hue_histogram_feature(query_object)
+            query_object_feature_dic = {feature: self.extract_global_hue_histogram_feature(query_object)}
 
         elif feature == 'color_moments':
-            query_object_feature = self.extract_color_moments_feature(query_object)
+            query_object_feature_dic = {feature: self.extract_color_moments_feature(query_object)}
 
         elif feature == 'central_circle_color_histogram':
-            query_object_feature = self.extract_central_circle_color_histogram_feature(query_object)
+            query_object_feature_dic = {feature: self.extract_central_circle_color_histogram_feature(query_object)}
 
         elif feature == 'contours':
-            query_object_feature = self.extract_contours_feature(query_object)
+            query_object_feature_dic = {feature: self.extract_contours_feature(query_object)}
+
+        elif feature == 'all':
+            query_object = self.extract_all_features(query_object)
+            query_object_feature_dic = self.get_all_features_dic(query_object)
 
         # compute all distances for the selected feature
-        similar_objects = self.get_all_distances(query_object_feature, feature, seg, distance_function)
+        similar_objects = self.get_all_distances(query_object_feature_dic, feature, seg, distance_function)
         # order list by distance
         similar_objects = sorted(similar_objects, key=itemgetter('distance'))
         return similar_objects
 
-    def get_all_distances(self, query_object_feature, feature, seg, distance_function):
+    def get_all_distances(self, query_object_feature_dic, feature, seg, distance_function):
         all_mmdbs_images = self.mmdbs_data
         similar_objects = []
         # loop over all images
         for mmdbs_image in all_mmdbs_images:
             # get distance between query object and mmdbs_image for this parameter and append it to the list
             similar_objects.append(
-                self.get_distance(query_object_feature, feature, seg, distance_function, mmdbs_image))
+                self.get_distance(query_object_feature_dic, feature, seg, distance_function, mmdbs_image))
 
         return similar_objects
 
     def get_number_of_mmdbs_images(self):
         return db_connection.get_count_images(self.conn)
 
-    def get_distance(self, query_object_feature, feature, seg, distance_function, mmdbs_image):
+    def get_distance(self, query_object_feature_dic, feature, seg, distance_function, mmdbs_image):
         # read the selected feature from the mmdbs_image (database object)
-        mmdbs_image_feature = self.get_mmdbs_image_feature(feature, seg, mmdbs_image)
+        mmdbs_image_feature_dic = self.get_mmdbs_image_feature_dic(feature, seg, mmdbs_image)
         # build the mmdbs_image_distance dic with mmdbs_image:distance
-        return self.get_mmdbs_image_distance_dictionary(mmdbs_image_feature, query_object_feature, distance_function,
+        return self.get_mmdbs_image_distance_dictionary(mmdbs_image_feature_dic, query_object_feature_dic, distance_function,
                                                         mmdbs_image, feature)
 
-    def get_mmdbs_image_feature(self, feature, seg, mmdbs_image):
+    def get_mmdbs_image_feature_dic(self, feature, seg, mmdbs_image):
         # read the selected feature from the mmdbs_image
         if feature == 'global_histogram':
-            return mmdbs_image.global_histogram
+            return {feature:mmdbs_image.global_histogram}
 
         elif feature == 'global_edge_histogram':
-            return mmdbs_image.global_edge_histogram
+            return {feature:mmdbs_image.global_edge_histogram}
 
         elif feature == 'local_histogram':
             if seg == '2_2':
-                return mmdbs_image.local_histogram_2_2
+                return {feature:mmdbs_image.local_histogram_2_2}
 
             elif seg == '3_3':
-                return mmdbs_image.local_histogram_3_3
+                return {feature:mmdbs_image.local_histogram_3_3}
 
             elif seg == '4_4':
-                return mmdbs_image.local_histogram_4_4
+                return {feature:mmdbs_image.local_histogram_4_4}
 
         elif feature == 'global_hue_histogram':
-            return mmdbs_image.global_hue_histogram
+            return {feature:mmdbs_image.global_hue_histogram}
 
         elif feature == 'color_moments':
-            return mmdbs_image.color_moments
+            return {feature:mmdbs_image.color_moments}
 
         elif feature == 'central_circle_color_histogram':
-            return mmdbs_image.central_circle_color_histogram
+            return {feature:mmdbs_image.central_circle_color_histogram}
 
         elif feature == 'contours':
-            return mmdbs_image.contours
+            return {feature:mmdbs_image.contours}
+        elif feature == 'all':
+            return self.get_all_features_dic(mmdbs_image)
 
-    def get_mmdbs_image_distance_dictionary(self, mmdbs_image_feature, query_object_feature, distance_function,
+    def get_mmdbs_image_distance_dictionary(self, mmdbs_image_feature_dic, query_object_feature_dic, distance_function,
                                             mmdbs_image, feature):
         # initialize dic
         mmdbs_image_distance_dictonary = {}
         # set image as key
         mmdbs_image_distance_dictonary['mmdbs_image'] = mmdbs_image
         # get feature value for distance calculation
-        mmdbs_image_feature_value = self.get_value_for_distance_calculation(mmdbs_image_feature, feature)
-        query_object_feature_value = self.get_value_for_distance_calculation(query_object_feature, feature)
+        mmdbs_image_feature_value_dic = self.get_value_for_distance_calculation(mmdbs_image_feature_dic, distance_function)
+        query_object_feature_value_dic = self.get_value_for_distance_calculation(query_object_feature_dic, distance_function)
 
         # call distance function for calculation
-        distance = distance_calculator.calculate_distance(mmdbs_image_feature_value, query_object_feature_value,
-                                                          distance_function)
+        distance = distance_calculator.calculate_distance(mmdbs_image_feature_value_dic, query_object_feature_value_dic,
+                                                          distance_function, selfs)
         # set distance as value
         mmdbs_image_distance_dictonary['distance'] = distance
 
         return mmdbs_image_distance_dictonary
 
-    def get_value_for_distance_calculation(self, mmdbs_image_feature, feature):
+    def get_value_for_distance_calculation(self, mmdbs_image_feature_dic, distance_function):
         # choose correct value for calculation dependent on feature...temporary all do the same
-        if feature != 'color_moments' and feature != 'contours':
-            mmdbs_image_feature = mmdbs_image_feature['cell_histograms'][0]['values']
-        return mmdbs_image_feature
+        mmdbs_image_feature_dic_new = mmdbs_image_feature_dic.copy()
+        for key, value in mmdbs_image_feature_dic_new.items():
+            if key != 'color_moments' and key != 'contours':
+                mmdbs_image_feature_dic_new[key] = mmdbs_image_feature_dic_new[key]['cell_histograms'][0]['values']
+        return mmdbs_image_feature_dic_new
 
     def extract_local_histogram_feature(self, mmdbs_image, seg):
 
@@ -288,6 +303,18 @@ class Controller(object):
         save_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), upload_image_path)
         queryobject.save(save_path)
         return upload_image_path
+
+
+    def get_all_features_dic(self, mmdbs_image):
+        mmdbs_image_feature_dic = {}
+        mmdbs_image_feature_dic['global_histogram'] = mmdbs_image.global_histogram
+        mmdbs_image_feature_dic['local_histogram'] = mmdbs_image.local_histogram_2_2
+        mmdbs_image_feature_dic['global_edge_histogram'] = mmdbs_image.global_edge_histogram
+        mmdbs_image_feature_dic['global_hue_histogram'] = mmdbs_image.global_hue_histogram
+        mmdbs_image_feature_dic['color_moments'] = mmdbs_image.color_moments
+        mmdbs_image_feature_dic['central_circle_color_histogram'] = mmdbs_image.central_circle_color_histogram
+        mmdbs_image_feature_dic['contours'] = mmdbs_image.contours
+        return mmdbs_image_feature_dic
 
     # @staticmethod
     # def delete_images_on_server():
