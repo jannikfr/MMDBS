@@ -68,7 +68,7 @@ class Controller(object):
         # compute all distances for the selected feature
         similar_objects = self.get_all_distances(query_object_feature_dic, feature_list, seg, distance_function)
         # order list by distance
-        similar_objects = sorted(similar_objects, key=itemgetter('distance'))
+        
         return similar_objects
 
     def get_all_distances(self, query_object_feature_dic, feature_list, seg, distance_function):
@@ -137,10 +137,10 @@ class Controller(object):
         query_object_feature_value_dic = self.get_value_for_distance_calculation(query_object_feature_dic, distance_function)
 
         # call distance function for calculation
-        distance = distance_calculator.calculate_distance(mmdbs_image_feature_value_dic, query_object_feature_value_dic,
+        distance_list = distance_calculator.calculate_distance(mmdbs_image_feature_value_dic, query_object_feature_value_dic,
                                                           distance_function, self)
         # set distance as value
-        mmdbs_image_distance_dictonary['distance'] = distance
+        mmdbs_image_distance_dictonary['distance_list'] = distance_list
 
         return mmdbs_image_distance_dictonary
 
@@ -287,15 +287,51 @@ class Controller(object):
 
         # Get lower and upper boundary
         min_distance = similar_objects[0]['distance']
-        max_distance = similar_objects[number_of_results-1]['distance']
+        max_distance = similar_objects[number_of_results - 1]['distance']
 
         # Loop over result set
         for similar_object in similar_objects[:number_of_results]:
-
             # Calculate normalized distance
             distance = similar_object['distance']
-            normalized_distance = (distance - min_distance)/(max_distance - min_distance)
+            normalized_distance = (distance - min_distance) / (max_distance - min_distance)
             similar_object['normalized_distance'] = format(normalized_distance, '.2f')
+
+        return similar_objects
+
+    @staticmethod
+    def normalize_sub_distances(similar_objects):
+        """
+        Normalize the distances linearly.
+        :param similar_objects: Result set
+        :param number_of_results: The number of results, which should be considered for the calculation
+        :return: The Result set array enriched by the attribute 'normalized_distance'
+        """
+        min_dic = {}
+        max_dic = {}
+        for similar_object in similar_objects:
+
+            for key, value in similar_object['distance_list'].items():
+                # Get lower and upper boundary
+                if key in min_dic:
+                    if min_dic[key] > value:
+                        min_dic[key] = value
+                else:
+                    min_dic[key] = value
+
+                if key in max_dic:
+                    if max_dic[key] < value:
+                        max_dic[key] = value
+                else:
+                    max_dic[key] = value
+
+            # Loop over result set
+        for similar_object in similar_objects:
+            similar_object['distance'] = 0.0
+            for key, value in similar_object['distance_list'].items():
+                min_distance = min_dic[key]
+                max_distance = max_dic[key]
+                distance = (value - min_distance)/(max_distance - min_distance)
+                similar_object['distance'] = similar_object['distance'] + distance
 
         return similar_objects
 

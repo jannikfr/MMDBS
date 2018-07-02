@@ -1,4 +1,6 @@
 import re
+from operator import itemgetter
+
 from flask import Flask, render_template, request
 from controller import Controller
 import db_connection
@@ -58,11 +60,18 @@ def do_db_search():
         # prepare upload path for HTML
         upload_image_path = '/' + upload_image_path
 
-        # do precision recall diagramm
-        precision_recall_path = '/' + controller.plot_precision_recall_curve(similar_objects, similar_objects[0]['mmdbs_image'].classification, amount_results)
+
 
         # normalize distances
+        similar_objects = controller.normalize_sub_distances(similar_objects)
+
+        similar_objects = sorted(similar_objects, key=itemgetter('distance'))
+
         similar_objects = controller.normalize_distances(similar_objects, amount_results)
+        # do precision recall diagramm
+
+        precision_recall_path = '/' + controller.plot_precision_recall_curve(similar_objects, similar_objects[0][
+            'mmdbs_image'].classification, amount_results)
 
         return callHtmlPage(feature_list, distance_function, seg, picanz, queryobject, similar_objects, feature_methods_list, distance_functions_list, segments_list, amount_results, precision_recall_path, upload_image_path, controller)
 

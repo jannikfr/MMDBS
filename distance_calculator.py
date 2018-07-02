@@ -6,15 +6,17 @@ import numpy as np
 def calculate_distance(feature1_dic, feature2_dic, distance_function, controller):
     distance = 0.0
 
+    distance_dic = {}
+
     if distance_function == 'euclidean_distance':
         # Loop over features and sum up the euclidean distances per feature
         for key, value in feature1_dic.items():
-            distance = distance + calculate_euclidean_distance(value, feature2_dic[key])
+            distance_dic[key] = (calculate_euclidean_distance(value, feature2_dic[key]))
 
     elif distance_function == 'cosine_distance':
         # Loop over features and sum up the Cosine distances per feature
         for key, value in feature1_dic.items():
-            distance = distance + calculate_cosine_distance(value, feature2_dic[key])
+            distance_dic[key] =calculate_cosine_distance(value, feature2_dic[key])
 
     elif distance_function == 'quadratic_form_distance':
         # Loop over features and sum up the quadratic form distances per feature
@@ -24,15 +26,15 @@ def calculate_distance(feature1_dic, feature2_dic, distance_function, controller
             number_of_attributes = len(get_same_key_set(value, feature2_dic[key])[0])
             weighting_matrix = np.ones((number_of_attributes, number_of_attributes))
             # Calculate distance
-            distance = distance + calculate_quadratic_form_distance(value, feature2_dic[key], weighting_matrix)
+            distance_dic[key] =calculate_quadratic_form_distance(value, feature2_dic[key], weighting_matrix)
 
     elif distance_function == 'weighted_euclidean_distance':
         # Loop over features and sum up weighted euclidean distances per feature
         weighting_matrix = controller.weight_dic
         for key, value in feature1_dic.items():
             weight = weighting_matrix[key]
-            distance = distance + calculate_euclidean_distance(value, feature2_dic[key]) * weight
-    return distance
+            distance_dic[key] =calculate_euclidean_distance(value, feature2_dic[key]) * weight
+    return distance_dic
 
 
 def get_same_key_set(a, b):
