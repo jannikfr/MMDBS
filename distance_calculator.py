@@ -1,6 +1,5 @@
 import math
 from operator import itemgetter
-
 import numpy as np
 
 
@@ -99,8 +98,7 @@ def calculate_cosine_distance(a, b):
     cosine_distance = 1 - (numerator/denominator)
 
     # Adjust cosine distance that 1 (best) => 0 and -1 (worst) => 2
-    cosine_distance = cosine_distance - 1
-    cosine_distance = cosine_distance * (- 1)
+    cosine_distance = cosine_distance - 1.0
 
     return cosine_distance
 
