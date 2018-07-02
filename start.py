@@ -85,7 +85,7 @@ def get_distance_functions():
     functions =[]
     functions.append(['euclidean_distance','Euclidean Distance'])
     functions.append(['quadratic_form_distance','Quadratic Form Distance'])
-    functions.append(['last_distance','Last Distance'])
+    functions.append(['cosine_distance','Cosine Distance'])
     return functions
 
 
