@@ -4,7 +4,6 @@ import numpy as np
 
 
 def calculate_distance(feature1_dic, feature2_dic, distance_function, controller):
-    distance = 0.0
 
     distance_dic = {}
 
@@ -16,7 +15,7 @@ def calculate_distance(feature1_dic, feature2_dic, distance_function, controller
     elif distance_function == 'cosine_distance':
         # Loop over features and sum up the Cosine distances per feature
         for key, value in feature1_dic.items():
-            distance_dic[key] =calculate_cosine_distance(value, feature2_dic[key])
+            distance_dic[key] = calculate_cosine_distance(value, feature2_dic[key])
 
     elif distance_function == 'quadratic_form_distance':
         # Loop over features and sum up the quadratic form distances per feature
@@ -26,14 +25,14 @@ def calculate_distance(feature1_dic, feature2_dic, distance_function, controller
             number_of_attributes = len(get_same_key_set(value, feature2_dic[key])[0])
             weighting_matrix = np.ones((number_of_attributes, number_of_attributes))
             # Calculate distance
-            distance_dic[key] =calculate_quadratic_form_distance(value, feature2_dic[key], weighting_matrix)
+            distance_dic[key] = calculate_quadratic_form_distance(value, feature2_dic[key], weighting_matrix)
 
     elif distance_function == 'weighted_euclidean_distance':
         # Loop over features and sum up weighted euclidean distances per feature
         weighting_matrix = controller.weight_dic
         for key, value in feature1_dic.items():
             weight = weighting_matrix[key]
-            distance_dic[key] =calculate_euclidean_distance(value, feature2_dic[key]) * weight
+            distance_dic[key] = calculate_euclidean_distance(value, feature2_dic[key]) * weight
     return distance_dic
 
 
@@ -63,17 +62,13 @@ def calculate_euclidean_distance(feature1, feature2):
     """
     euclidean_distance = 0.0
 
-    # Get the common set of keys
-    keys = {**feature1, **feature2}.keys()
+    feature1, feature2 = get_same_key_set(feature1, feature2)
 
     # Loop over the set of keys
-    for key in keys:
-        feature1_value = 0
-        feature2_value = 0
-        if key in feature1:
-            feature1_value = feature1[key]
-        if key in feature2:
-            feature2_value = feature2[key]
+    for key in feature1.keys():
+
+        feature1_value = feature1[key]
+        feature2_value = feature2[key]
 
         # Calculate the squared difference between the values
         difference = feature1_value - feature2_value
@@ -93,23 +88,18 @@ def calculate_cosine_distance(a, b):
     sum_a_times_b = 0.0
     sum_b_times_b = 0.0
 
-    # Get the common set of keys
-    keys = {**a, **b}.keys()
+    a, b = get_same_key_set(a, b)
 
     # Loop over the set of keys
-    for key in keys:
-        a_value = 0
-        b_value = 0
-        if key in a:
-            a_value = a[key]
-        if key in b:
-            b_value = b[key]
+    for key in a.keys():
+        a_value = a[key]
+        b_value = b[key]
 
         sum_a_times_a = sum_a_times_a + a_value**2
         sum_a_times_b = sum_a_times_b + a_value * b_value
         sum_b_times_b = sum_b_times_b + b_value ** 2
 
-    numerator = math.sqrt(sum_a_times_b)
+    numerator = sum_a_times_b
     denominator = math.sqrt(sum_a_times_a)*math.sqrt(sum_b_times_b)
 
     if denominator != 0:

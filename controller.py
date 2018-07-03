@@ -301,9 +301,8 @@ class Controller(object):
     @staticmethod
     def normalize_sub_distances(similar_objects):
         """
-        Normalize the distances linearly.
+        Normalize the distances per feature linearly.
         :param similar_objects: Result set
-        :param number_of_results: The number of results, which should be considered for the calculation
         :return: The Result set array enriched by the attribute 'normalized_distance'
         """
         min_dic = {}
