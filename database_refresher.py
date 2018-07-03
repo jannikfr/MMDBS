@@ -17,7 +17,7 @@ print("The images are stored in ", path, ".")
 conn = db_connection.connect()
 MMDBSImages = db_connection.get_all_images(conn)
 
-# Loop trough all subdirectories of the given path if refresh = TRUE
+# Loop trough all subdirectories of the given path
 # The name of each subdirectory represents the class of the images inside
 
 # Clean up database.
